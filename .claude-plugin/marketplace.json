@@ -1,0 +1,21 @@
+{
+  "name": "codeliance-skills",
+  "owner": {
+    "name": "Yoni Lavi",
+    "email": "yoni@codeliance.com"
+  },
+  "metadata": {
+    "description": "Claude Code skills by Codeliance"
+  },
+  "plugins": [
+    {
+      "name": "c4-architecture",
+      "source": "./plugins/c4-architecture",
+      "description": "Scans codebases to produce C4 architecture models in Structurizr DSL, with optional diagram rendering.",
+      "version": "0.1.0",
+      "author": {
+        "name": "Yoni Lavi"
+      }
+    }
+  ]
+}
