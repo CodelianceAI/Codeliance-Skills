@@ -2,20 +2,20 @@
 
 Based on the [Structurizr DSL language reference](https://docs.structurizr.com/dsl/language). Structurizr DSL is open source under the Apache-2.0 licence.
 
+For deployment nodes, dynamic views, filtered views, and properties/URLs, see `structurizr-dsl-advanced.md`.
+
 ---
 
 ## Workspace
 
 ```dsl
 workspace [name] [description] {
-    !identifiers hierarchical
     model { }
     views { }
 }
 ```
 
 - `name` and `description` are optional (quote strings with spaces).
-- `!identifiers hierarchical` enables scoped identifiers with dot notation (recommended).
 
 ---
 
@@ -111,7 +111,7 @@ api = container "API" {
 }
 ```
 
-**Implied relationships:** A relationship between lower-level elements (e.g., `user -> api`) automatically implies a relationship between their parents (e.g., `user -> system`). System context views work without explicit system-level relationships. Disable with `!impliedRelationships false`.
+**Implied relationships:** A relationship between lower-level elements (e.g., `user -> api`) automatically implies a relationship between their parents (e.g., `user -> system`). Disable with `!impliedRelationships false`.
 
 **Relationship identifiers:** `rel = user -> system "Uses" "HTTPS"`
 
@@ -119,9 +119,9 @@ api = container "API" {
 
 ## Tags
 
-Tags classify elements for filtering. They are additive -- they never replace default tags.
+Tags classify elements for filtering. They are additive — they never replace default tags.
 
-**Inline** -- the last positional string on an element definition:
+**Inline** — the last positional string on an element definition:
 ```dsl
 db = container "Database" "Stores data" "PostgreSQL" "Database"
 ext = softwareSystem "External" "Third party" "External"
@@ -139,7 +139,7 @@ Multiple tags: comma-separated `"Tag1,Tag2"` or separate args `"Tag1" "Tag2"`.
 
 **Common semantic tags:** `Database`, `Queue`, `External`, `Mobile`, `Browser`, `Existing`.
 
-**Auto-applied defaults:** `Element` on all elements; type-specific tag (`Person`, `Software System`, `Container`, `Component`, `Deployment Node`, `Infrastructure Node`); `Relationship` on all relationships.
+**Auto-applied defaults:** `Element` on all elements; type-specific tag (`Person`, `Software System`, `Container`, `Component`); `Relationship` on all relationships.
 
 ---
 
@@ -179,43 +179,12 @@ component <containerId> [key] [description] {
 }
 ```
 
-### Deployment
-```dsl
-deployment <*|softwareSystemId> <environmentName> [key] [description] {
-    include *
-    autoLayout lr
-}
-```
-Use `*` to include all systems. `environmentName` must match a `deploymentEnvironment` name.
-
-### Dynamic
-```dsl
-dynamic <*|softwareSystemId|containerId> [key] [description] {
-    title "User Login Flow"
-    user -> webapp "Submits credentials"
-    webapp -> authService "Validates credentials"
-    authService -> db "Queries user record"
-    autoLayout lr
-}
-```
-Each line is an ordered step. Order is implicit from line position.
-
-### Filtered
-```dsl
-filtered <baseViewKey> <include|exclude> <tags> [key] [description]
-```
-Example:
-```dsl
-filtered "landscape" include "External,Relationship" "externalOnly"
-filtered "landscape" exclude "External" "internalOnly"
-```
-
 ### Include / Exclude
 
-- `include *` -- all elements relevant to the view scope.
-- `include user api db` -- specific elements by identifier.
-- `exclude legacySystem` -- remove specific elements.
-- `exclude "user -> legacySystem"` -- remove specific relationships.
+- `include *` — all elements relevant to the view scope.
+- `include user api db` — specific elements by identifier.
+- `exclude legacySystem` — remove specific elements.
+- `exclude "user -> legacySystem"` — remove specific relationships.
 
 ### AutoLayout
 
@@ -232,100 +201,6 @@ Directions: `tb` (top-bottom, default), `bt`, `lr`, `rl`. Separations are intege
 - Assigned with `=`: `mySystem = softwareSystem "My System"`
 - Only needed when the element is referenced elsewhere.
 
-**Flat (default):** Global namespace. Duplicate names cause errors.
+**Flat (default):** Global namespace. All identifiers must be unique across the workspace. Simple and readable — recommended for single-system workspaces.
 
-**Hierarchical:** `!identifiers hierarchical` at workspace level. Reference with dot notation:
-```dsl
-workspace {
-    !identifiers hierarchical
-    model {
-        s1 = softwareSystem "System 1" {
-            api = container "API"
-        }
-        s2 = softwareSystem "System 2" {
-            api = container "API"
-        }
-        s1.api -> s2.api "Calls"
-    }
-}
-```
-
----
-
-## Properties and URLs
-
-```dsl
-mySystem = softwareSystem "System" {
-    properties {
-        owner "Team Alpha"
-        repo "github.com/org/repo"
-    }
-    url "https://github.com/org/repo"
-}
-```
-
----
-
-## Deployment
-
-### Deployment Environment and Nodes
-
-```dsl
-model {
-    system = softwareSystem "System" {
-        api = container "API" "" "Go"
-        db = container "Database" "" "PostgreSQL" "Database"
-    }
-
-    prod = deploymentEnvironment "Production" {
-        deploymentNode "AWS" "" "Amazon Web Services" {
-            deploymentNode "ECS" "" "AWS ECS" {
-                containerInstance api
-            }
-            deploymentNode "RDS" "" "AWS RDS" {
-                containerInstance db
-            }
-        }
-    }
-}
-```
-
-### Deployment Node
-
-```dsl
-deploymentNode "Name" [description] [technology] [tags] [instances] {
-    deploymentNode "Child" { }
-    containerInstance <containerIdentifier>
-    softwareSystemInstance <systemIdentifier>
-    infrastructureNode "Name" [description] [technology] [tags]
-}
-```
-- `instances`: a number (`"4"`) or range (`"1..N"`). Default `"1"`.
-- Default tags: `Element`, `Deployment Node`.
-
-### Infrastructure Node
-
-For non-container infrastructure (load balancers, DNS, firewalls).
-
-```dsl
-lb = infrastructureNode "Load Balancer" "Routes traffic" "AWS ALB"
-```
-Default tags: `Element`, `Infrastructure Node`.
-
-### Container Instance
-
-```dsl
-containerInstance <containerIdentifier> [deploymentGroups] [tags]
-```
-Inherits tags from the referenced container. Adds `Container Instance` tag.
-
-### Deployment View
-
-```dsl
-views {
-    deployment system "Production" "prodView" {
-        include *
-        autoLayout lr
-    }
-}
-```
+**Hierarchical:** `!identifiers hierarchical` at workspace level. Allows reusing names across scopes, referenced via dot notation (`system1.api -> system2.api`). Useful for multi-system workspaces where identifier collisions would occur.

@@ -85,7 +85,8 @@ c4-architecture/
 │   └── c4-architecture/
 │       ├── SKILL.md
 │       ├── references/
-│       │   └── structurizr-dsl-reference.md
+│       │   ├── structurizr-dsl-reference.md
+│       │   └── structurizr-dsl-advanced.md
 │       └── examples/
 │           └── example-workspace.dsl
 └── README.md

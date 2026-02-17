@@ -6,6 +6,8 @@ description: >
   or mentions C4, Structurizr, architecture modelling, architecture
   visualisation, system context diagrams, container diagrams, or
   component diagrams.
+disable-model-invocation: true
+context: fork
 allowed-tools: Read, Glob, Grep, Bash, Write, Edit
 ---
 
@@ -36,6 +38,17 @@ project-root/
 ```
 
 On first generation, create the `architecture/` directory, write the DSL file, and add `architecture/.diagrams/` to the project's `.gitignore`.
+
+## Monorepos and Multi-System Repositories
+
+For monorepos containing multiple independently deployable systems:
+
+- Model each system as a separate `softwareSystem` within a single workspace.
+- Use a `systemLandscape` view to show how the systems relate.
+- Each system's containers and components are modelled as usual.
+- Consider using `!identifiers hierarchical` to avoid identifier collisions across systems.
+
+The single `architecture/workspace.dsl` file remains the output — one file captures the full picture.
 
 ## When To Use
 
@@ -108,6 +121,8 @@ workspace "System Name" "One-line description." {
 - `"External"` on external software systems
 - `"Queue"` on message queues and event buses
 
+**Identifiers:** Use flat (default) identifiers for single-system workspaces — they're simpler and more readable. Switch to `!identifiers hierarchical` only for multi-system workspaces where name collisions would occur. See the DSL reference for details.
+
 **Naming conventions:**
 - Identifiers in `camelCase`: `webApp`, `videoService`, `analyticsDb`
 - Human-readable display names: `"Web Application"`, `"Video Service"`
@@ -147,7 +162,7 @@ Generate views for all three core C4 levels:
    }
    ```
 
-**Optional views** (generate when relevant information is available):
+**Optional views** (generate when relevant information is available — see `references/structurizr-dsl-advanced.md` for syntax):
 
 - **deployment** — if infrastructure details are present (Kubernetes, Terraform, docker-compose)
 - **dynamic** — for key behavioural flows that clarify runtime interactions
@@ -176,7 +191,11 @@ brew install structurizr-cli
 
 Do not prompt to install tools during generation. Just note availability as optional.
 
-### Step 5 — Render (optional)
+### Step 5 — Update .gitignore
+
+Check the project's `.gitignore`. If `architecture/.diagrams/` is not already listed, add it. The rendered output directory should not be committed.
+
+### Step 6 — Render (optional)
 
 The DSL file is the primary deliverable. Only render images if the user requests them.
 
