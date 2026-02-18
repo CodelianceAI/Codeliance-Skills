@@ -133,23 +133,27 @@ workspace "System Name" "One-line description." {
 - Add a `source` property to **components** pointing to the primary file or directory that implements the component. This is the main target for `source` properties.
 - Optionally add `source` to **containers** pointing to their root directory (e.g., `services/api/`).
 - Paths are relative to the **project root** (not the `architecture/` directory).
-- For AST-level precision, append `::SymbolName` after the file path: `src/controllers/upload.ts::UploadController`
-- Non-local references are also valid: URLs (`https://...`), SSH (`git@...`), or FQCNs (`com.example.OrderService`).
+- For AST-level precision, append `::SymbolName` after the file path: `src/service.py::OrderService`
+- Dotted paths reach into nested symbols: `src/service.py::OrderService.create_order`
+- Non-local references are also valid: URLs (`https://...`), SSH (`git@...`), or FQCNs (`com.example.OrderService`). These are skipped during validation.
 - Elements without code (databases, queues, external systems, people) don't need `source`.
 
 ```
-component "Upload Controller" ... {
+component "Order Service" ... {
     properties {
-        source "src/controllers/upload.controller.ts::UploadController"
+        source "src/service.py::OrderService"
     }
 }
 ```
 
-A bundled script validates that local source paths exist:
+A bundled script validates that local source paths exist and, for Python files, that `::Symbol` references resolve in the AST:
 
 ```bash
 bash <skill-plugin-dir>/scripts/check-sources.sh architecture/workspace.dsl
+bash <skill-plugin-dir>/scripts/check-sources.sh --no-ast architecture/workspace.dsl  # skip AST checks
 ```
+
+AST validation requires [`uv`](https://docs.astral.sh/uv/). If `uv` is not installed, the script exits with an error suggesting `--no-ast`. Non-Python files with `::` suffixes fall back to file-only checking.
 
 **Relationships** — define at the lowest relevant level:
 - Every relationship needs a **description** of what is communicated: `"Sends viewing events to"`, `"Queries user profiles from"`

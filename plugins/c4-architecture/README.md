@@ -102,10 +102,13 @@ What are the logical building blocks inside each container?
 
 Components in the DSL carry `source` properties that point to the code they represent. The bundled `check-sources.sh` script verifies these paths exist, catching stale references when files are renamed, moved, or deleted.
 
+For Python files with `::Symbol` references, the script also validates that the symbol exists in the file's AST (requires [`uv`](https://docs.astral.sh/uv/)). Pass `--no-ast` to skip symbol validation.
+
 **Manual usage:**
 
 ```bash
 scripts/check-sources.sh architecture/workspace.dsl
+scripts/check-sources.sh --no-ast architecture/workspace.dsl  # skip AST symbol checks
 ```
 
 **Git pre-commit hook (`.git/hooks/pre-commit` or via a hook manager):**
@@ -117,11 +120,11 @@ if [[ -f architecture/workspace.dsl ]]; then
 fi
 ```
 
-The script only validates local file paths. URLs, SSH references, FQCNs, and AST suffixes (`::ClassName`) are handled correctly — non-local references are skipped, and `::` suffixes are stripped before checking the file.
+The script validates local file paths and, for Python files, AST symbols. URLs, SSH references, and FQCNs are skipped. Non-Python `::` suffixes are stripped before checking the file.
 
 Exit codes:
-- `0` — all local source paths exist
-- `1` — one or more paths are missing (details printed to stderr)
+- `0` — all local source paths and symbols exist
+- `1` — one or more paths or symbols are missing (details printed to stderr)
 - `2` — usage error (missing argument or DSL file not found)
 
 ## Plugin Structure
@@ -133,6 +136,7 @@ c4-architecture/
 ├── commands/
 │   └── c4.md
 ├── scripts/
+│   ├── check-ast.py
 │   ├── check-sources.sh
 │   └── render.sh
 ├── skills/
@@ -144,7 +148,23 @@ c4-architecture/
 │       └── examples/
 │           ├── example-workspace.dsl
 │           └── .diagrams/              # Rendered example SVGs
+├── tests/
+│   ├── test-check-sources.sh           # Test suite for source validation
+│   └── fixtures/                       # DSL and source fixtures
 └── README.md
+```
+
+Run the test suite manually from the plugin root:
+
+```bash
+bash tests/test-check-sources.sh
+```
+
+The test suite also runs automatically via a [pre-commit](https://pre-commit.com/) hook whenever the validation scripts or test fixtures change. To set it up:
+
+```bash
+pip install pre-commit
+pre-commit install
 ```
 
 ## Acknowledgements

@@ -1,0 +1,13 @@
+repos:
+  - repo: local
+    hooks:
+      - id: check-sources-tests
+        name: check-sources test suite
+        entry: bash plugins/c4-architecture/tests/test-check-sources.sh
+        language: system
+        pass_filenames: false
+        files: >-
+          (?x)^plugins/c4-architecture/(
+            scripts/check-(sources\.sh|ast\.py)
+            |tests/
+          )
