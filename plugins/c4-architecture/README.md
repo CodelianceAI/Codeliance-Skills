@@ -14,7 +14,7 @@ A Claude Code plugin that analyses codebases and produces C4 architecture models
 - **Full C4 depth** — models all 3 useful levels: System Context, Container, and Component (Level 4 Code is what the IDE shows)
 - **Single-file DSL output** — produces one `workspace.dsl` capturing the entire architecture in a diffable, version-controlled format
 - **DSL-first, AI-agent-friendly** — no visual-only styling; every line carries architectural meaning that agents can read, reason about, and maintain
-- **Optional image rendering** — PNG/SVG diagrams via `structurizr-cli` + `plantuml`, when you need them
+- **Optional image rendering** — SVG diagrams via `structurizr-cli` + `plantuml`, with clickable drill-down links between views
 
 ## Project Layout
 
@@ -24,7 +24,7 @@ The DSL file lives in your project, versioned alongside code. When architecture 
 project-root/
 ├── architecture/
 │   ├── workspace.dsl          # Committed — the architecture source of truth
-│   └── .diagrams/             # Gitignored — rendered PNG/SVG/PUML output
+│   └── .diagrams/             # Gitignored — rendered SVG output
 ├── src/
 ├── ...
 ```
@@ -48,20 +48,41 @@ Run `/c4` inside Claude Code. The skill reads the current project and produces a
 
 **Primary output:** `architecture/workspace.dsl` — committed to the repository as the architecture source of truth.
 
-**Optional rendered images:** `architecture/.diagrams/` — gitignored PNG/SVG files for documentation or presentations.
+**Optional rendered images:** `architecture/.diagrams/` — gitignored SVG files for documentation or presentations.
 
-To manually render images after generation:
+To manually render images after generation, use the bundled render script:
 
 ```bash
-# Export DSL to PlantUML
-structurizr-cli export -workspace architecture/workspace.dsl -format plantuml/c4plantuml -output architecture/.diagrams
-
-# Render PNGs
-plantuml -tpng architecture/.diagrams/*.puml
-
-# Or render SVGs
-plantuml -tsvg architecture/.diagrams/*.puml
+# Render SVGs with drill-down links (clicking a system → containers, clicking a container → components)
+scripts/render.sh architecture/workspace.dsl architecture/.diagrams
 ```
+
+## Example Output
+
+These diagrams were generated from the [example workspace](skills/c4-architecture/examples/example-workspace.dsl) — a video streaming platform. The SVGs are clickable: clicking a system drills into its containers, clicking a container drills into its components.
+
+### System Context
+
+Who uses the system and what external dependencies does it have?
+
+![System Context](skills/c4-architecture/examples/.diagrams/SystemContext.svg)
+
+### Containers
+
+What are the deployable units inside the system?
+
+![Containers](skills/c4-architecture/examples/.diagrams/Containers.svg)
+
+### Components
+
+What are the logical building blocks inside each container?
+
+| Container | View |
+|-----------|------|
+| API Gateway | [ComponentsOfApiGateway.svg](skills/c4-architecture/examples/.diagrams/ComponentsOfApiGateway.svg) |
+| Video Service | [ComponentsOfVideoService.svg](skills/c4-architecture/examples/.diagrams/ComponentsOfVideoService.svg) |
+| User Service | [ComponentsOfUserService.svg](skills/c4-architecture/examples/.diagrams/ComponentsOfUserService.svg) |
+| Recommendation Engine | [ComponentsOfRecommendationEngine.svg](skills/c4-architecture/examples/.diagrams/ComponentsOfRecommendationEngine.svg) |
 
 ## C4 Levels
 
@@ -81,6 +102,8 @@ c4-architecture/
 │   └── plugin.json
 ├── commands/
 │   └── c4.md
+├── scripts/
+│   └── render.sh
 ├── skills/
 │   └── c4-architecture/
 │       ├── SKILL.md
@@ -88,7 +111,8 @@ c4-architecture/
 │       │   ├── structurizr-dsl-reference.md
 │       │   └── structurizr-dsl-advanced.md
 │       └── examples/
-│           └── example-workspace.dsl
+│           ├── example-workspace.dsl
+│           └── .diagrams/              # Rendered example SVGs
 └── README.md
 ```
 

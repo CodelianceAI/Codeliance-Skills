@@ -4,6 +4,10 @@
 *.png
 *.svg
 
+# But keep example diagrams (plugin showcase)
+!plugins/c4-architecture/skills/c4-architecture/examples/.diagrams/
+!plugins/c4-architecture/skills/c4-architecture/examples/.diagrams/*.svg
+
 # Structurizr
 structurizr*.war
 *.json.bak

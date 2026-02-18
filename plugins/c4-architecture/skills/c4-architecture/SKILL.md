@@ -207,16 +207,42 @@ The DSL file is the primary deliverable. Only render images if the user requests
 
 Rendering uses a temp directory for intermediate `.puml` files so that `.diagrams/` only contains final SVG images — no `.puml` noise.
 
+**Drill-down links:** The rendered SVGs are clickable — clicking a system drills into its container diagram, clicking a container drills into its component diagram. This works by injecting `$link` values into the exported `.puml` files before rendering. The Structurizr exporter includes an empty `$link=""` parameter on every element; the pipeline scans boundary declarations to determine which view each element should link to, then `sed`-replaces the empty links with the target SVG filename. PlantUML renders these as `<a>` tags in the SVG output.
+
 ```bash
 tmpdir=$(mktemp -d)
-structurizr-cli export \
-  -workspace architecture/workspace.dsl \
-  -format plantuml/c4plantuml \
-  -output "$tmpdir"
+trap 'rm -rf "$tmpdir"' EXIT
+
+# Export and strip prefix
+structurizr-cli export -workspace architecture/workspace.dsl -format plantuml/c4plantuml -output "$tmpdir"
 for f in "$tmpdir"/structurizr-*.puml; do mv "$f" "$tmpdir/$(basename "$f" | sed 's/^structurizr-//')"; done
+
+# Build link map: scan boundaries to find drill-down targets
+# Container_Boundary("X.Y_boundary") → component view → link Container(X.Y, ...) to this SVG
+# System_Boundary("X_boundary") alone → container view → link System(X, ...) to this SVG
+link_map="$tmpdir/_link_map.txt"
+: > "$link_map"
+for f in "$tmpdir"/*.puml; do
+  [ -f "$f" ] || continue
+  svg_name="$(basename "$f" .puml).svg"
+  cb_id=$(sed -n 's/.*Container_Boundary("\([^"]*\)_boundary".*/\1/p' "$f" | head -1)
+  if [ -n "$cb_id" ]; then echo "Container ${cb_id} ${svg_name}" >> "$link_map"; continue; fi
+  sb_id=$(sed -n 's/.*System_Boundary("\([^"]*\)_boundary".*/\1/p' "$f" | head -1)
+  if [ -n "$sb_id" ]; then echo "System ${sb_id} ${svg_name}" >> "$link_map"; fi
+done
+
+# Inject $link values
+while IFS=' ' read -r elem_type elem_id svg_name; do
+  escaped_id=$(echo "$elem_id" | sed 's/\./\\./g')
+  for f in "$tmpdir"/*.puml; do
+    [ -f "$f" ] || continue
+    sed '/'"${elem_type}"'('"${escaped_id}"',/s/\$link=""/\$link="'"${svg_name}"'"/' "$f" > "$f.tmp" && mv "$f.tmp" "$f"
+  done
+done < "$link_map"
+
+# Render SVGs
 mkdir -p architecture/.diagrams
-plantuml -tsvg -o "$(pwd)/architecture/.diagrams" "$tmpdir"/*.puml
-rm -rf "$tmpdir"
+plantuml -tsvg -o "$(cd architecture/.diagrams && pwd)" "$tmpdir"/*.puml
 ```
 
 SVG is the sole output format: scalable (no pixelation on dense diagrams), text is searchable and selectable, and renders natively in browsers, GitHub markdown, and VS Code preview.
