@@ -63,54 +63,42 @@ workspace "StreamVault" "A video streaming platform for content delivery, creato
 
             // -----------------------------------------------------------
             // Container-Level Relationships
+            // Only relationships with no component-level equivalent.
+            // All other container-level relationships are implied from
+            // component-level definitions below.
             // -----------------------------------------------------------
-            webApp -> apiGateway "Makes API requests to" "HTTPS/JSON"
-
-            apiGateway -> videoService "Forwards video requests to" "HTTPS/JSON"
-            apiGateway -> userService "Forwards user requests to" "HTTPS/JSON"
-            apiGateway -> recommendationEngine "Requests recommendations from" "HTTPS/JSON"
-
-            videoService -> videoDatabase "Reads and writes video metadata" "JDBC"
-            videoService -> eventBus "Publishes video lifecycle events to" "AMQP"
-            videoService -> cdnProvider "Pushes transcoded video assets to" "HTTPS"
-
-            userService -> userDatabase "Reads and writes user data" "TCP"
-            userService -> paymentGateway "Processes payments via" "HTTPS/JSON"
-            userService -> eventBus "Publishes subscription events to" "AMQP"
-
-            recommendationEngine -> analyticsDatabase "Queries viewing history and metrics from" "TCP"
             recommendationEngine -> eventBus "Consumes viewing events from" "AMQP"
-
             eventBus -> pushNotificationService "Triggers notifications via" "HTTPS"
         }
 
         // ---------------------------------------------------------------
-        // System-Level Relationships
-        // Only define relationships here that cannot be inferred from
-        // container- or component-level relationships. Structurizr
-        // propagates lower-level relationships upward automatically.
+        // Person → Container Relationships
+        // People reach containers through the Web Application (intermediary),
+        // so person→component relationships are not needed — the container
+        // view already shows who accesses what.
         // ---------------------------------------------------------------
-        viewer -> streamVault "Watches videos and manages playlists using" "HTTPS"
-        contentCreator -> streamVault "Uploads videos and manages channel via" "HTTPS"
-        platformAdmin -> streamVault "Administers platform settings through" "HTTPS"
+        viewer -> webApp "Watches videos and manages playlists using" "HTTPS"
+        contentCreator -> webApp "Uploads videos and manages channel via" "HTTPS"
+        platformAdmin -> webApp "Administers platform settings through" "HTTPS"
 
-        // streamVault -> cdnProvider, paymentGateway, pushNotificationService
-        // are implied by container-level relationships above — no need to redefine.
+        // viewer -> streamVault, contentCreator -> streamVault, etc.
+        // are implied by person → webApp (webApp is inside streamVault).
 
         // ---------------------------------------------------------------
         // Component-Level Relationships — API Gateway
         // ---------------------------------------------------------------
         webApp -> authMiddleware "Sends authenticated requests to" "HTTPS/JSON"
         authMiddleware -> routeHandler "Passes validated requests to"
-        routeHandler -> videoService "Routes video requests to" "HTTPS/JSON"
-        routeHandler -> userService "Routes user requests to" "HTTPS/JSON"
-        routeHandler -> recommendationEngine "Routes recommendation requests to" "HTTPS/JSON"
         rateLimiter -> authMiddleware "Guards incoming requests before"
+
+        // Cross-container: component → component (implies apiGateway → container)
+        routeHandler -> uploadController "Routes video requests to" "HTTPS/JSON"
+        routeHandler -> accountHandler "Routes user requests to" "HTTPS/JSON"
+        routeHandler -> recommendationApi "Routes recommendation requests to" "HTTPS/JSON"
 
         // ---------------------------------------------------------------
         // Component-Level Relationships — Video Service
         // ---------------------------------------------------------------
-        apiGateway -> uploadController "Sends upload requests to" "HTTPS/JSON"
         uploadController -> transcodingOrchestrator "Initiates transcoding via"
         transcodingOrchestrator -> videoMetadataRepository "Updates job status in"
         transcodingOrchestrator -> eventBus "Publishes transcoding events to" "AMQP"
@@ -121,7 +109,6 @@ workspace "StreamVault" "A video streaming platform for content delivery, creato
         // ---------------------------------------------------------------
         // Component-Level Relationships — User Service
         // ---------------------------------------------------------------
-        apiGateway -> accountHandler "Sends account requests to" "HTTPS/JSON"
         accountHandler -> subscriptionManager "Delegates subscription operations to"
         subscriptionManager -> channelRepository "Reads and writes channel data via"
         subscriptionManager -> paymentClient "Initiates payment transactions via"
@@ -132,7 +119,6 @@ workspace "StreamVault" "A video streaming platform for content delivery, creato
         // ---------------------------------------------------------------
         // Component-Level Relationships — Recommendation Engine
         // ---------------------------------------------------------------
-        apiGateway -> recommendationApi "Requests recommendations from" "HTTPS/JSON"
         recommendationApi -> mlPipeline "Invokes recommendation models in"
         mlPipeline -> viewingHistoryRepository "Reads aggregated viewing data from"
         viewingHistoryRepository -> analyticsDatabase "Queries viewing history" "TCP"

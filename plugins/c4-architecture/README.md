@@ -46,6 +46,9 @@ Neither tool is required. The skill generates a valid `workspace.dsl` file that 
 
 Run `/c4` inside Claude Code. The skill reads the current project and produces a C4 architecture model.
 
+- **`/c4`** or **`/c4 full`** — scan the entire codebase and generate a complete workspace from scratch.
+- **`/c4 update`** — read the existing `architecture/workspace.dsl`, diff against the current codebase, and apply targeted edits for what changed. Preserves comments, formatting, and manual adjustments.
+
 **Primary output:** `architecture/workspace.dsl` — committed to the repository as the architecture source of truth.
 
 **Optional rendered images:** `architecture/.diagrams/` — gitignored SVG files for documentation or presentations.

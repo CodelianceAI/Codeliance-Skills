@@ -25,6 +25,13 @@ if [ $# -ne 2 ]; then
   exit 1
 fi
 
+for cmd in structurizr-cli plantuml; do
+  if ! command -v "$cmd" >/dev/null 2>&1; then
+    echo "Error: $cmd is not installed. Install with: brew install $cmd" >&2
+    exit 1
+  fi
+done
+
 workspace="$1"
 outdir="$2"
 
@@ -91,5 +98,6 @@ mkdir -p "$outdir"
 abs_outdir=$(cd "$outdir" && pwd)
 plantuml -tsvg -o "$abs_outdir" "$tmpdir"/*.puml
 
-count=$(ls "$outdir"/*.svg 2>/dev/null | wc -l | tr -d ' ')
+count=0
+for f in "$outdir"/*.svg; do [ -f "$f" ] && count=$((count + 1)); done
 echo "Rendered ${count} SVG(s) to $outdir"

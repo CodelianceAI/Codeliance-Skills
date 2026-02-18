@@ -25,6 +25,7 @@ Key principles:
 - **Component-level modelling is standard, not optional.** Without it, most code changes won't produce DSL diffs and the model goes stale.
 - **Keep the DSL content-focused.** No styles section — C4-PlantUML provides sensible defaults. Every line in the file carries architectural meaning.
 - **Components map to real code boundaries** — handlers, services, repositories, middleware, event processors — logical groupings, not individual classes.
+- **Aim for 3–7 components per container.** Fewer than 3 usually means you're modelling at container granularity and the component view adds little value — consider whether the container needs a component view at all. More than 7 makes the component diagram hard to read — look for components that could be grouped or that represent the same architectural concern. Each component should represent a distinct responsibility boundary that a developer would recognise: "the auth layer", "the orchestrator client", "the data access layer". If two components always change together and have the same dependencies, they're probably one component.
 
 ## Repository Layout
 
@@ -140,6 +141,13 @@ workspace "System Name" "One-line description." {
 - Only define explicit system-level relationships for connections that **cannot** be inferred from lower levels (e.g., person-to-system relationships when no person-to-container relationship exists)
 - The implied description inherits from the lowest-level relationship; if different wording is needed at the system context level, use `!impliedRelationships false` and define all levels manually (trade-off: more maintenance)
 
+**Cross-container relationships** — When a component in one container calls a component in another, define the relationship at the component level (`callerComponent -> receiverComponent`). This makes the caller appear in the receiver's component view and vice versa, giving the most informative diagrams. The container-level relationship is implied automatically. Only fall back to component→container when the calling container doesn't have components defined, or when the relationship is genuinely to the container as a whole (e.g., publishing to a message queue that has no internal component structure).
+
+**Person-to-component relationships:**
+
+- If users reach the container through an intermediary (reverse proxy, API gateway, load balancer), define person→intermediary at the container level and keep component views focused on internal and cross-container relationships. People don't need to appear in the component view — the container view already shows who accesses what.
+- If users interact with the container directly (no intermediary), person→component relationships are appropriate and make the component view more informative. This is typical for standalone services, CLIs, or bots.
+
 ### Step 3 — Create Views
 
 Generate views for all three core C4 levels:
@@ -205,45 +213,13 @@ Check the project's `.gitignore`. If `architecture/.diagrams/` is not already li
 
 The DSL file is the primary deliverable. Only render images if the user requests them.
 
-Rendering uses a temp directory for intermediate `.puml` files so that `.diagrams/` only contains final SVG images — no `.puml` noise.
-
-**Drill-down links:** The rendered SVGs are clickable — clicking a system drills into its container diagram, clicking a container drills into its component diagram. This works by injecting `$link` values into the exported `.puml` files before rendering. The Structurizr exporter includes an empty `$link=""` parameter on every element; the pipeline scans boundary declarations to determine which view each element should link to, then `sed`-replaces the empty links with the target SVG filename. PlantUML renders these as `<a>` tags in the SVG output.
+Run the bundled rendering script (located in this skill's plugin directory):
 
 ```bash
-tmpdir=$(mktemp -d)
-trap 'rm -rf "$tmpdir"' EXIT
-
-# Export and strip prefix
-structurizr-cli export -workspace architecture/workspace.dsl -format plantuml/c4plantuml -output "$tmpdir"
-for f in "$tmpdir"/structurizr-*.puml; do mv "$f" "$tmpdir/$(basename "$f" | sed 's/^structurizr-//')"; done
-
-# Build link map: scan boundaries to find drill-down targets
-# Container_Boundary("X.Y_boundary") → component view → link Container(X.Y, ...) to this SVG
-# System_Boundary("X_boundary") alone → container view → link System(X, ...) to this SVG
-link_map="$tmpdir/_link_map.txt"
-: > "$link_map"
-for f in "$tmpdir"/*.puml; do
-  [ -f "$f" ] || continue
-  svg_name="$(basename "$f" .puml).svg"
-  cb_id=$(sed -n 's/.*Container_Boundary("\([^"]*\)_boundary".*/\1/p' "$f" | head -1)
-  if [ -n "$cb_id" ]; then echo "Container ${cb_id} ${svg_name}" >> "$link_map"; continue; fi
-  sb_id=$(sed -n 's/.*System_Boundary("\([^"]*\)_boundary".*/\1/p' "$f" | head -1)
-  if [ -n "$sb_id" ]; then echo "System ${sb_id} ${svg_name}" >> "$link_map"; fi
-done
-
-# Inject $link values
-while IFS=' ' read -r elem_type elem_id svg_name; do
-  escaped_id=$(echo "$elem_id" | sed 's/\./\\./g')
-  for f in "$tmpdir"/*.puml; do
-    [ -f "$f" ] || continue
-    sed '/'"${elem_type}"'('"${escaped_id}"',/s/\$link=""/\$link="'"${svg_name}"'"/' "$f" > "$f.tmp" && mv "$f.tmp" "$f"
-  done
-done < "$link_map"
-
-# Render SVGs
-mkdir -p architecture/.diagrams
-plantuml -tsvg -o "$(cd architecture/.diagrams && pwd)" "$tmpdir"/*.puml
+bash <skill-plugin-dir>/scripts/render.sh architecture/workspace.dsl architecture/.diagrams
 ```
+
+The script handles the full pipeline: export to PlantUML, strip filename prefixes, scan boundaries to build drill-down link targets, inject `$link` values, and render SVGs. The rendered SVGs are clickable — clicking a system drills into its container diagram, clicking a container drills into its component diagram.
 
 SVG is the sole output format: scalable (no pixelation on dense diagrams), text is searchable and selectable, and renders natively in browsers, GitHub markdown, and VS Code preview.
 
@@ -268,6 +244,50 @@ When updating a codebase, check whether the changes have architectural impact an
 | Bug fix or internal refactor with no structural change | No DSL change needed |
 
 The DSL diff in the pull request shows reviewers the architectural impact of the code change. This is the core value of maintaining the model alongside the code.
+
+## Update Workflow (`/c4 update`)
+
+The initial `/c4` generation happens once per project. Every subsequent use is `/c4 update`. Update mode reads the DSL first — the DSL is the baseline; the code diff tells you what to check.
+
+### Step 1 — Read the existing workspace
+
+Parse `architecture/workspace.dsl` to understand the current model: what systems, containers, components, and relationships are already captured.
+
+### Step 2 — Identify what changed
+
+Use git to find structurally relevant changes since the DSL was last updated:
+
+```bash
+git diff --name-only HEAD~N -- '*.py' '*.ts' '*.go' '*.java' '*.yaml' '*.toml' '*.json'
+```
+
+Filter to files that could affect architecture: new services, new apps/modules, changed API routes, new database models, new external integrations, changed config files (docker-compose, Terraform, etc.). Ignore test files, templates, static assets, and docs.
+
+If the user doesn't specify a range, compare against the last commit that touched `architecture/workspace.dsl`:
+
+```bash
+git log -1 --format=%H -- architecture/workspace.dsl
+```
+
+### Step 3 — Classify changes against the DSL impact table
+
+Use the table from "Keeping the DSL in Sync" as the decision framework:
+
+- **New service/database/queue** → add container + component view
+- **New handler/service/repository** → add component to the appropriate container
+- **New API call or integration** → add relationship at the lowest relevant level
+- **Renamed/removed element** → update or remove from the model
+- **Internal refactor** → no DSL change needed
+
+For each changed file, determine: does this introduce, remove, or rename an architectural element? If not, skip it.
+
+### Step 4 — Apply targeted edits
+
+Use the Edit tool on `architecture/workspace.dsl` rather than rewriting the whole file. This preserves comments, formatting, and any manual adjustments the user may have made.
+
+### Step 5 — Validate and optionally re-render
+
+Follow the same validation (Step 4 of the full process) and rendering (Step 6) steps as the initial generation.
 
 ## Quality Checklist
 
