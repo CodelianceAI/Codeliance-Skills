@@ -1,5 +1,5 @@
 {
   "name": "c4-architecture",
   "description": "Scans codebases to produce C4 architecture models in Structurizr DSL, with optional diagram rendering.",
-  "version": "0.2.0"
+  "version": "0.3.0"
 }

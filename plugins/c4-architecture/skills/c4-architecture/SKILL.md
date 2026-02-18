@@ -128,11 +128,17 @@ workspace "System Name" "One-line description." {
 - Human-readable display names: `"Web Application"`, `"Video Service"`
 - Specific technology labels: `"React SPA"`, `"Go / Chi"`, `"ClickHouse"`
 
-**Relationships** — define at every C4 level:
+**Relationships** — define at the lowest relevant level:
 - Every relationship needs a **description** of what is communicated: `"Sends viewing events to"`, `"Queries user profiles from"`
 - Add a **technology** label where known: `"HTTPS/JSON"`, `"gRPC"`, `"AMQP"`, `"TCP"`
 - Arrow direction follows who initiates: `caller -> callee`
-- Cover system-level, container-level, and component-level relationships
+
+**Implied relationships** — Structurizr automatically propagates relationships upward. A component-level relationship implies a container-level one, which in turn implies a system-level one. Follow these rules:
+
+- Define relationships at the **lowest relevant level** (component or container)
+- Do **not** redefine relationships at higher levels that are already implied — this causes validation errors (`"A relationship … already exists"`)
+- Only define explicit system-level relationships for connections that **cannot** be inferred from lower levels (e.g., person-to-system relationships when no person-to-container relationship exists)
+- The implied description inherits from the lowest-level relationship; if different wording is needed at the system context level, use `!impliedRelationships false` and define all levels manually (trade-off: more maintenance)
 
 ### Step 3 — Create Views
 
@@ -199,21 +205,21 @@ Check the project's `.gitignore`. If `architecture/.diagrams/` is not already li
 
 The DSL file is the primary deliverable. Only render images if the user requests them.
 
-**Export to PlantUML:**
+Rendering uses a temp directory for intermediate `.puml` files so that `.diagrams/` only contains final SVG images — no `.puml` noise.
 
 ```bash
-structurizr-cli export -workspace architecture/workspace.dsl -format plantuml/c4plantuml -output architecture/.diagrams
+tmpdir=$(mktemp -d)
+structurizr-cli export \
+  -workspace architecture/workspace.dsl \
+  -format plantuml/c4plantuml \
+  -output "$tmpdir"
+for f in "$tmpdir"/structurizr-*.puml; do mv "$f" "$tmpdir/$(basename "$f" | sed 's/^structurizr-//')"; done
+mkdir -p architecture/.diagrams
+plantuml -tsvg -o "$(pwd)/architecture/.diagrams" "$tmpdir"/*.puml
+rm -rf "$tmpdir"
 ```
 
-**Render to PNG or SVG:**
-
-```bash
-# PNG
-plantuml -tpng architecture/.diagrams/*.puml
-
-# SVG
-plantuml -tsvg architecture/.diagrams/*.puml
-```
+SVG is the sole output format: scalable (no pixelation on dense diagrams), text is searchable and selectable, and renders natively in browsers, GitHub markdown, and VS Code preview.
 
 If the tools are not installed:
 
@@ -231,7 +237,7 @@ When updating a codebase, check whether the changes have architectural impact an
 |-------------|------------|
 | New service, database, or message queue | Add a container and create a component view for it |
 | New handler, service class, or repository | Add a component to the appropriate container |
-| New API call or external integration | Add a relationship (at all relevant levels) |
+| New API call or external integration | Add a relationship at the lowest relevant level (implied relationships propagate upward) |
 | Removed or renamed element | Update or remove it from the model |
 | Bug fix or internal refactor with no structural change | No DSL change needed |
 
@@ -246,7 +252,7 @@ Run through this checklist before handing the workspace to the user:
 - [ ] Each container with components has a corresponding component view
 - [ ] Elements carry descriptions and technology labels
 - [ ] Relationship descriptions say what flows, not just "uses" or "calls"
-- [ ] Relationships exist at every level — system, container, and component
+- [ ] Relationships are defined at the lowest relevant level; no duplicates of implied relationships
 - [ ] External systems carry the `"External"` tag
 - [ ] Data stores carry the `"Database"` tag
 - [ ] Message brokers carry the `"Queue"` tag

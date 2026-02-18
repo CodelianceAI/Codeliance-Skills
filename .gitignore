@@ -1,5 +1,5 @@
 # Generated diagrams
-diagrams/
+.diagrams/
 *.puml
 *.png
 *.svg

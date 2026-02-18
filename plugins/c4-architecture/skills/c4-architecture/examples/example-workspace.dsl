@@ -86,14 +86,16 @@ workspace "StreamVault" "A video streaming platform for content delivery, creato
 
         // ---------------------------------------------------------------
         // System-Level Relationships
+        // Only define relationships here that cannot be inferred from
+        // container- or component-level relationships. Structurizr
+        // propagates lower-level relationships upward automatically.
         // ---------------------------------------------------------------
         viewer -> streamVault "Watches videos and manages playlists using" "HTTPS"
         contentCreator -> streamVault "Uploads videos and manages channel via" "HTTPS"
         platformAdmin -> streamVault "Administers platform settings through" "HTTPS"
 
-        streamVault -> cdnProvider "Distributes video content via" "HTTPS"
-        streamVault -> paymentGateway "Processes payments through" "HTTPS/JSON"
-        streamVault -> pushNotificationService "Sends notifications via" "HTTPS"
+        // streamVault -> cdnProvider, paymentGateway, pushNotificationService
+        // are implied by container-level relationships above — no need to redefine.
 
         // ---------------------------------------------------------------
         // Component-Level Relationships — API Gateway
