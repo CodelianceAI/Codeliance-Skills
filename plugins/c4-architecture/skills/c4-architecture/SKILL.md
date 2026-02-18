@@ -129,6 +129,28 @@ workspace "System Name" "One-line description." {
 - Human-readable display names: `"Web Application"`, `"Video Service"`
 - Specific technology labels: `"React SPA"`, `"Go / Chi"`, `"ClickHouse"`
 
+**Source properties** — link model elements to the code they represent:
+- Add a `source` property to **components** pointing to the primary file or directory that implements the component. This is the main target for `source` properties.
+- Optionally add `source` to **containers** pointing to their root directory (e.g., `services/api/`).
+- Paths are relative to the **project root** (not the `architecture/` directory).
+- For AST-level precision, append `::SymbolName` after the file path: `src/controllers/upload.ts::UploadController`
+- Non-local references are also valid: URLs (`https://...`), SSH (`git@...`), or FQCNs (`com.example.OrderService`).
+- Elements without code (databases, queues, external systems, people) don't need `source`.
+
+```
+component "Upload Controller" ... {
+    properties {
+        source "src/controllers/upload.controller.ts::UploadController"
+    }
+}
+```
+
+A bundled script validates that local source paths exist:
+
+```bash
+bash <skill-plugin-dir>/scripts/check-sources.sh architecture/workspace.dsl
+```
+
 **Relationships** — define at the lowest relevant level:
 - Every relationship needs a **description** of what is communicated: `"Sends viewing events to"`, `"Queries user profiles from"`
 - Add a **technology** label where known: `"HTTPS/JSON"`, `"gRPC"`, `"AMQP"`, `"TCP"`
@@ -304,5 +326,6 @@ Run through this checklist before handing the workspace to the user:
 - [ ] Message brokers carry the `"Queue"` tag
 - [ ] Every view has `autoLayout`
 - [ ] No `styles` block — rendering defaults come from C4-PlantUML
+- [ ] Components have `source` properties pointing to the corresponding code
 - [ ] Output is written to `architecture/workspace.dsl`
 - [ ] `architecture/.diagrams/` is listed in `.gitignore`

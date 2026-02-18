@@ -24,33 +24,109 @@ workspace "StreamVault" "A video streaming platform for content delivery, creato
             // -----------------------------------------------------------
             // Containers
             // -----------------------------------------------------------
-            webApp = container "Web Application" "Provides the viewer and creator experience in the browser." "React SPA"
+            webApp = container "Web Application" "Provides the viewer and creator experience in the browser." "React SPA" {
+                properties {
+                    source "web/"
+                }
+            }
 
             apiGateway = container "API Gateway" "Routes and authenticates all client requests to backend services." "Node.js / Express" {
+                properties {
+                    source "services/api-gateway/"
+                }
+
                 // Components
-                authMiddleware = component "Auth Middleware" "Validates JWT tokens and enforces access control." "Express Middleware"
-                routeHandler = component "Route Handler" "Maps incoming requests to the appropriate backend service." "Express Router"
-                rateLimiter = component "Rate Limiter" "Throttles requests to protect backend services from overload." "express-rate-limit"
+                authMiddleware = component "Auth Middleware" "Validates JWT tokens and enforces access control." "Express Middleware" {
+                    properties {
+                        source "services/api-gateway/src/middleware/auth.ts"
+                    }
+                }
+                routeHandler = component "Route Handler" "Maps incoming requests to the appropriate backend service." "Express Router" {
+                    properties {
+                        source "services/api-gateway/src/routes/"
+                    }
+                }
+                rateLimiter = component "Rate Limiter" "Throttles requests to protect backend services from overload." "express-rate-limit" {
+                    properties {
+                        source "services/api-gateway/src/middleware/rate-limiter.ts"
+                    }
+                }
             }
 
             videoService = container "Video Service" "Handles video upload, transcoding orchestration, and metadata management." "Java / Spring Boot" {
-                uploadController = component "Upload Controller" "Accepts video uploads and initiates processing workflows." "Spring REST Controller"
-                transcodingOrchestrator = component "Transcoding Orchestrator" "Manages the transcoding pipeline and tracks job progress." "Spring Service"
-                videoMetadataRepository = component "Video Metadata Repository" "Reads and writes video metadata to the database." "Spring Data JPA"
-                cdnClient = component "CDN Client" "Publishes transcoded video assets to the CDN for distribution." "HTTP Client"
+                properties {
+                    source "services/video/"
+                }
+
+                uploadController = component "Upload Controller" "Accepts video uploads and initiates processing workflows." "Spring REST Controller" {
+                    properties {
+                        source "services/video/src/main/java/com/streamvault/video/controller/UploadController.java::UploadController"
+                    }
+                }
+                transcodingOrchestrator = component "Transcoding Orchestrator" "Manages the transcoding pipeline and tracks job progress." "Spring Service" {
+                    properties {
+                        source "services/video/src/main/java/com/streamvault/video/service/TranscodingOrchestrator.java::TranscodingOrchestrator"
+                    }
+                }
+                videoMetadataRepository = component "Video Metadata Repository" "Reads and writes video metadata to the database." "Spring Data JPA" {
+                    properties {
+                        source "services/video/src/main/java/com/streamvault/video/repository/VideoMetadataRepository.java"
+                    }
+                }
+                cdnClient = component "CDN Client" "Publishes transcoded video assets to the CDN for distribution." "HTTP Client" {
+                    properties {
+                        source "services/video/src/main/java/com/streamvault/video/client/CdnClient.java"
+                    }
+                }
             }
 
             userService = container "User Service" "Manages user accounts, profiles, subscriptions, and creator channels." "Go" {
-                accountHandler = component "Account Handler" "Handles registration, login, and profile operations." "HTTP Handler"
-                subscriptionManager = component "Subscription Manager" "Manages viewer subscriptions and billing lifecycle." "Service"
-                channelRepository = component "Channel Repository" "Persists creator channel data and follower relationships." "pgx Repository"
-                paymentClient = component "Payment Client" "Integrates with the external payment gateway for transactions." "HTTP Client"
+                properties {
+                    source "services/user/"
+                }
+
+                accountHandler = component "Account Handler" "Handles registration, login, and profile operations." "HTTP Handler" {
+                    properties {
+                        source "services/user/handler/account.go"
+                    }
+                }
+                subscriptionManager = component "Subscription Manager" "Manages viewer subscriptions and billing lifecycle." "Service" {
+                    properties {
+                        source "services/user/service/subscription.go"
+                    }
+                }
+                channelRepository = component "Channel Repository" "Persists creator channel data and follower relationships." "pgx Repository" {
+                    properties {
+                        source "services/user/repository/channel.go"
+                    }
+                }
+                paymentClient = component "Payment Client" "Integrates with the external payment gateway for transactions." "HTTP Client" {
+                    properties {
+                        source "services/user/client/payment.go"
+                    }
+                }
             }
 
             recommendationEngine = container "Recommendation Engine" "Generates personalised video recommendations based on viewing history." "Python / FastAPI" {
-                recommendationApi = component "Recommendation API" "Serves recommendation requests from the API gateway." "FastAPI Router"
-                mlPipeline = component "ML Pipeline" "Runs collaborative filtering and content-based models." "scikit-learn / PyTorch"
-                viewingHistoryRepository = component "Viewing History Repository" "Queries aggregated viewing data for model input." "SQLAlchemy Repository"
+                properties {
+                    source "services/recommendation/"
+                }
+
+                recommendationApi = component "Recommendation API" "Serves recommendation requests from the API gateway." "FastAPI Router" {
+                    properties {
+                        source "services/recommendation/app/api/recommendations.py"
+                    }
+                }
+                mlPipeline = component "ML Pipeline" "Runs collaborative filtering and content-based models." "scikit-learn / PyTorch" {
+                    properties {
+                        source "services/recommendation/app/ml/"
+                    }
+                }
+                viewingHistoryRepository = component "Viewing History Repository" "Queries aggregated viewing data for model input." "SQLAlchemy Repository" {
+                    properties {
+                        source "services/recommendation/app/repository/viewing_history.py"
+                    }
+                }
             }
 
             eventBus = container "Event Bus" "Decouples services via asynchronous event-driven messaging." "RabbitMQ" "Queue"

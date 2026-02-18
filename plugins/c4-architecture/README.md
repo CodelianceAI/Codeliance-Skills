@@ -14,6 +14,7 @@ A Claude Code plugin that analyses codebases and produces C4 architecture models
 - **Full C4 depth** — models all 3 useful levels: System Context, Container, and Component (Level 4 Code is what the IDE shows)
 - **Single-file DSL output** — produces one `workspace.dsl` capturing the entire architecture in a diffable, version-controlled format
 - **DSL-first, AI-agent-friendly** — no visual-only styling; every line carries architectural meaning that agents can read, reason about, and maintain
+- **Source traceability** — components carry `source` properties linking to the code they represent; a validation script catches stale references
 - **Optional image rendering** — SVG diagrams via `structurizr-cli` + `plantuml`, with clickable drill-down links between views
 
 ## Project Layout
@@ -97,6 +98,32 @@ What are the logical building blocks inside each container?
 | Optional — Deployment | `deployment` | Infrastructure and deployment environments |
 | Optional — Dynamic | `dynamic` | Key behavioural flows showing runtime interactions |
 
+## Pre-Commit Validation
+
+Components in the DSL carry `source` properties that point to the code they represent. The bundled `check-sources.sh` script verifies these paths exist, catching stale references when files are renamed, moved, or deleted.
+
+**Manual usage:**
+
+```bash
+scripts/check-sources.sh architecture/workspace.dsl
+```
+
+**Git pre-commit hook (`.git/hooks/pre-commit` or via a hook manager):**
+
+```bash
+#!/usr/bin/env bash
+if [[ -f architecture/workspace.dsl ]]; then
+  bash scripts/check-sources.sh architecture/workspace.dsl
+fi
+```
+
+The script only validates local file paths. URLs, SSH references, FQCNs, and AST suffixes (`::ClassName`) are handled correctly — non-local references are skipped, and `::` suffixes are stripped before checking the file.
+
+Exit codes:
+- `0` — all local source paths exist
+- `1` — one or more paths are missing (details printed to stderr)
+- `2` — usage error (missing argument or DSL file not found)
+
 ## Plugin Structure
 
 ```
@@ -106,6 +133,7 @@ c4-architecture/
 ├── commands/
 │   └── c4.md
 ├── scripts/
+│   ├── check-sources.sh
 │   └── render.sh
 ├── skills/
 │   └── c4-architecture/
