@@ -1,0 +1,37 @@
+# Hook definitions for consuming repositories.
+#
+# These run the same scripts the c4-architecture plugin ships, but reached
+# through pre-commit's own clone-and-pin rather than through
+# ~/.claude/plugins/installed_plugins.json.
+#
+# WHY THAT MATTERS: a commit gate must not depend on the developer's agent
+# configuration. Resolving the script path at run time out of the installed-
+# plugin manifest coupled the gate's availability to whether that developer had
+# the plugin installed — and the failure was badly shaped in both directions.
+# Absent, `jq -r` prints the string "null" and exits 0, so the shell `&&`
+# succeeded and the gate died as `null/scripts/check-sources.sh: No such file or
+# directory`, pointing the reader at a missing script rather than a missing
+# plugin. Present, it ran whatever version that box happened to have cached,
+# with nothing in the consuming repository saying which — so two boxes could
+# validate the same model to two different standards and both report green.
+#
+# Under `- repo: <this repo>` with a `rev:`, the version is pinned by the
+# consuming repository, `pre-commit autoupdate` maintains it, the hook works on
+# a box with no Claude Code installed at all, and it is reachable from CI.
+#
+# Requires `uv` on PATH for the `::Symbol` AST checks (check-sources.sh shells
+# out to check-ast.py, which is PEP-723 and stdlib-only). Pass --no-ast to skip
+# them if a consumer cannot guarantee uv.
+
+- id: check-c4-sources
+  name: validate C4 source references
+  description: >-
+    Check that every `source` property in a Structurizr DSL workspace resolves
+    to a file, directory or Python symbol that actually exists.
+  entry: plugins/c4-architecture/scripts/check-sources.sh
+  language: script
+  # The DSL path is passed as the matched filename rather than hard-coded, so a
+  # consumer whose model lives elsewhere overrides `files:` and nothing else.
+  # check-sources.sh takes exactly one workspace, so keep the override anchored
+  # to a single path.
+  files: ^architecture/workspace\.dsl$
