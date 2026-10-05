@@ -5,7 +5,7 @@
     "email": "yoni@codeliance.com"
   },
   "metadata": {
-    "description": "Claude Code skills by Codeliance"
+    "description": "Claude Code plugins and mods by Codeliance"
   },
   "plugins": [
     {
@@ -14,7 +14,18 @@
       "description": "Scans codebases to produce C4 architecture models in Structurizr DSL, with optional diagram rendering.",
       "version": "0.4.0",
       "author": {
-        "name": "Yoni Lavi"
+        "name": "Yoni Lavi",
+        "email": "yoni@codeliance.com"
+      }
+    },
+    {
+      "name": "continue-session",
+      "source": "./plugins/continue-session",
+      "description": "Gives Claude a continueInNewSession(prompt) tool: /clear, then start the fresh session with that prompt.",
+      "version": "0.1.0",
+      "author": {
+        "name": "Yoni Lavi",
+        "email": "yoni@codeliance.com"
       }
     }
   ]

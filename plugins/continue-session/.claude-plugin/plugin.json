@@ -1,0 +1,17 @@
+{
+  "name": "continue-session",
+  "version": "0.1.0",
+  "author": {
+    "name": "Yoni Lavi",
+    "email": "yoni@codeliance.com"
+  },
+  "description": "Gives Claude a continueInNewSession(prompt) tool: /clear, then start the fresh session with that prompt.",
+  "userConfig": {
+    "maxChain": {
+      "type": "number",
+      "title": "Max chained handoffs",
+      "description": "Handoffs allowed in a row without a message from you. Your own message resets the count.",
+      "default": 10
+    }
+  }
+}

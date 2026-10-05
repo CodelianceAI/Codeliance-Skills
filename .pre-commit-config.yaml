@@ -11,3 +11,9 @@ repos:
             scripts/check-(sources\.sh|ast\.py)
             |tests/
           )
+      - id: continue-session-tests
+        name: continue-session validate and test suite
+        entry: bash -c 'claude plugin validate plugins/continue-session && claude plugin test plugins/continue-session'
+        language: system
+        pass_filenames: false
+        files: ^plugins/continue-session/
