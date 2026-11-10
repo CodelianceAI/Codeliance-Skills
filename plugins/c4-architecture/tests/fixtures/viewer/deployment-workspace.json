@@ -1,0 +1,1422 @@
+{
+  "configuration" : { },
+  "description" : "A video streaming platform for content delivery, creator tools, and viewer engagement.",
+  "documentation" : { },
+  "id" : 0,
+  "model" : {
+    "deploymentNodes" : [ {
+      "children" : [ {
+        "children" : [ {
+          "containerInstances" : [ {
+            "containerId" : "8",
+            "deploymentGroups" : [ "Default" ],
+            "environment" : "Live",
+            "id" : "83",
+            "instanceId" : 1,
+            "properties" : {
+              "structurizr.dsl.identifier" : "50ce553e-8289-4e38-8bd8-fd0cb3391f61"
+            },
+            "relationships" : [ {
+              "description" : "Sends authenticated requests to",
+              "destinationId" : "84",
+              "id" : "85",
+              "linkedRelationshipId" : "41",
+              "sourceId" : "83",
+              "technology" : "HTTPS/JSON"
+            } ],
+            "tags" : "Container Instance"
+          }, {
+            "containerId" : "9",
+            "deploymentGroups" : [ "Default" ],
+            "environment" : "Live",
+            "id" : "84",
+            "instanceId" : 1,
+            "properties" : {
+              "structurizr.dsl.identifier" : "4817c210-1330-471f-a508-5a096ea9993d"
+            },
+            "relationships" : [ {
+              "description" : "Routes video requests to",
+              "destinationId" : "87",
+              "id" : "88",
+              "linkedRelationshipId" : "47",
+              "sourceId" : "84",
+              "technology" : "HTTPS/JSON"
+            }, {
+              "description" : "Routes user requests to",
+              "destinationId" : "89",
+              "id" : "90",
+              "linkedRelationshipId" : "51",
+              "sourceId" : "84",
+              "technology" : "HTTPS/JSON"
+            }, {
+              "description" : "Routes recommendation requests to",
+              "destinationId" : "91",
+              "id" : "92",
+              "linkedRelationshipId" : "55",
+              "sourceId" : "84",
+              "technology" : "HTTPS/JSON"
+            } ],
+            "tags" : "Container Instance"
+          } ],
+          "environment" : "Live",
+          "id" : "82",
+          "instances" : "1",
+          "name" : "Frontend pool",
+          "properties" : {
+            "structurizr.dsl.identifier" : "fe6c2c80-a627-492a-865f-de1fdc28c9e7"
+          },
+          "tags" : "Element,Deployment Node",
+          "technology" : "Node pool"
+        }, {
+          "containerInstances" : [ {
+            "containerId" : "13",
+            "deploymentGroups" : [ "Default" ],
+            "environment" : "Live",
+            "id" : "87",
+            "instanceId" : 1,
+            "properties" : {
+              "structurizr.dsl.identifier" : "b8676f48-6ac3-4fdc-a235-92e47b331c41"
+            },
+            "relationships" : [ {
+              "description" : "Publishes transcoding events to",
+              "destinationId" : "94",
+              "id" : "95",
+              "linkedRelationshipId" : "59",
+              "sourceId" : "87",
+              "technology" : "AMQP"
+            }, {
+              "description" : "Reads and writes video records",
+              "destinationId" : "99",
+              "id" : "100",
+              "linkedRelationshipId" : "61",
+              "sourceId" : "87",
+              "technology" : "JDBC"
+            } ],
+            "tags" : "Container Instance"
+          }, {
+            "containerId" : "18",
+            "deploymentGroups" : [ "Default" ],
+            "environment" : "Live",
+            "id" : "89",
+            "instanceId" : 1,
+            "properties" : {
+              "structurizr.dsl.identifier" : "344370b6-5987-41b0-854a-beb913efa2c2"
+            },
+            "relationships" : [ {
+              "description" : "Publishes subscription events to",
+              "destinationId" : "94",
+              "id" : "96",
+              "linkedRelationshipId" : "75",
+              "sourceId" : "89",
+              "technology" : "AMQP"
+            }, {
+              "description" : "Persists channel and follower data",
+              "destinationId" : "101",
+              "id" : "102",
+              "linkedRelationshipId" : "70",
+              "sourceId" : "89",
+              "technology" : "TCP"
+            } ],
+            "tags" : "Container Instance"
+          }, {
+            "containerId" : "23",
+            "deploymentGroups" : [ "Default" ],
+            "environment" : "Live",
+            "id" : "91",
+            "instanceId" : 1,
+            "properties" : {
+              "structurizr.dsl.identifier" : "38eeba66-a2e3-41cf-b755-599beb96ff23"
+            },
+            "relationships" : [ {
+              "description" : "Consumes viewing events from",
+              "destinationId" : "94",
+              "id" : "97",
+              "linkedRelationshipId" : "31",
+              "sourceId" : "91",
+              "technology" : "AMQP"
+            }, {
+              "description" : "Queries viewing history",
+              "destinationId" : "103",
+              "id" : "104",
+              "linkedRelationshipId" : "79",
+              "sourceId" : "91",
+              "technology" : "TCP"
+            } ],
+            "tags" : "Container Instance"
+          } ],
+          "environment" : "Live",
+          "id" : "86",
+          "instances" : "1",
+          "name" : "Services pool",
+          "properties" : {
+            "structurizr.dsl.identifier" : "ac483a31-7574-4168-9109-47e074f974e5"
+          },
+          "tags" : "Element,Deployment Node",
+          "technology" : "Node pool"
+        }, {
+          "containerInstances" : [ {
+            "containerId" : "27",
+            "deploymentGroups" : [ "Default" ],
+            "environment" : "Live",
+            "id" : "94",
+            "instanceId" : 1,
+            "properties" : {
+              "structurizr.dsl.identifier" : "2e00d4ff-8124-4700-a58e-329bf2f149da"
+            },
+            "tags" : "Container Instance"
+          } ],
+          "environment" : "Live",
+          "id" : "93",
+          "instances" : "1",
+          "name" : "Messaging",
+          "properties" : {
+            "structurizr.dsl.identifier" : "1866ebe9-3c30-497b-a260-28c1ecbdc710"
+          },
+          "tags" : "Element,Deployment Node",
+          "technology" : "StatefulSet"
+        } ],
+        "environment" : "Live",
+        "id" : "81",
+        "instances" : "1",
+        "name" : "Kubernetes cluster",
+        "properties" : {
+          "structurizr.dsl.identifier" : "11c24cd0-c63e-4dad-9b41-1e4808627f85"
+        },
+        "tags" : "Element,Deployment Node",
+        "technology" : "Kubernetes"
+      }, {
+        "containerInstances" : [ {
+          "containerId" : "28",
+          "deploymentGroups" : [ "Default" ],
+          "environment" : "Live",
+          "id" : "99",
+          "instanceId" : 1,
+          "properties" : {
+            "structurizr.dsl.identifier" : "c5f7f19d-5896-4fc3-89dd-134bf4d1c048"
+          },
+          "tags" : "Container Instance"
+        }, {
+          "containerId" : "29",
+          "deploymentGroups" : [ "Default" ],
+          "environment" : "Live",
+          "id" : "101",
+          "instanceId" : 1,
+          "properties" : {
+            "structurizr.dsl.identifier" : "49f02c51-cada-4ec7-a4f8-e56366f57c8e"
+          },
+          "tags" : "Container Instance"
+        }, {
+          "containerId" : "30",
+          "deploymentGroups" : [ "Default" ],
+          "environment" : "Live",
+          "id" : "103",
+          "instanceId" : 1,
+          "properties" : {
+            "structurizr.dsl.identifier" : "0259b6cd-ac77-452f-8233-4d010960a828"
+          },
+          "tags" : "Container Instance"
+        } ],
+        "environment" : "Live",
+        "id" : "98",
+        "instances" : "1",
+        "name" : "Managed databases",
+        "properties" : {
+          "structurizr.dsl.identifier" : "49c5ce16-93fb-45b4-bf44-5b7a0a3a70ce"
+        },
+        "tags" : "Element,Deployment Node",
+        "technology" : "Managed PostgreSQL and ClickHouse"
+      } ],
+      "environment" : "Live",
+      "id" : "80",
+      "instances" : "1",
+      "name" : "Cloud region",
+      "properties" : {
+        "structurizr.dsl.identifier" : "74d6cae5-cc63-476a-a286-c34e5f30b63a"
+      },
+      "tags" : "Element,Deployment Node",
+      "technology" : "Hosted cloud"
+    } ],
+    "people" : [ {
+      "description" : "Watches videos, manages playlists, and subscribes to channels.",
+      "id" : "1",
+      "name" : "Viewer",
+      "properties" : {
+        "structurizr.dsl.identifier" : "viewer"
+      },
+      "relationships" : [ {
+        "description" : "Watches videos and manages playlists using",
+        "destinationId" : "8",
+        "id" : "34",
+        "sourceId" : "1",
+        "tags" : "Relationship",
+        "technology" : "HTTPS"
+      }, {
+        "description" : "Watches videos and manages playlists using",
+        "destinationId" : "7",
+        "id" : "35",
+        "linkedRelationshipId" : "34",
+        "sourceId" : "1",
+        "technology" : "HTTPS"
+      } ],
+      "tags" : "Element,Person"
+    }, {
+      "description" : "Uploads videos, manages channel, and reviews analytics.",
+      "id" : "2",
+      "name" : "Content Creator",
+      "properties" : {
+        "structurizr.dsl.identifier" : "contentCreator"
+      },
+      "relationships" : [ {
+        "description" : "Uploads videos and manages channel via",
+        "destinationId" : "8",
+        "id" : "36",
+        "sourceId" : "2",
+        "tags" : "Relationship",
+        "technology" : "HTTPS"
+      }, {
+        "description" : "Uploads videos and manages channel via",
+        "destinationId" : "7",
+        "id" : "37",
+        "linkedRelationshipId" : "36",
+        "sourceId" : "2",
+        "technology" : "HTTPS"
+      } ],
+      "tags" : "Element,Person"
+    }, {
+      "description" : "Manages platform settings, moderates content, and monitors system health.",
+      "id" : "3",
+      "name" : "Platform Admin",
+      "properties" : {
+        "structurizr.dsl.identifier" : "platformAdmin"
+      },
+      "relationships" : [ {
+        "description" : "Administers platform settings through",
+        "destinationId" : "8",
+        "id" : "38",
+        "sourceId" : "3",
+        "tags" : "Relationship",
+        "technology" : "HTTPS"
+      }, {
+        "description" : "Administers platform settings through",
+        "destinationId" : "7",
+        "id" : "39",
+        "linkedRelationshipId" : "38",
+        "sourceId" : "3",
+        "technology" : "HTTPS"
+      } ],
+      "tags" : "Element,Person"
+    } ],
+    "softwareSystems" : [ {
+      "description" : "Distributes video content to viewers globally via edge caches.",
+      "documentation" : { },
+      "id" : "4",
+      "name" : "CDN Provider",
+      "properties" : {
+        "structurizr.dsl.identifier" : "cdnProvider"
+      },
+      "tags" : "Element,Software System,External"
+    }, {
+      "description" : "Processes subscription payments and creator payouts.",
+      "documentation" : { },
+      "id" : "5",
+      "name" : "Payment Gateway",
+      "properties" : {
+        "structurizr.dsl.identifier" : "paymentGateway"
+      },
+      "tags" : "Element,Software System,External"
+    }, {
+      "description" : "Delivers push notifications to mobile and web clients.",
+      "documentation" : { },
+      "id" : "6",
+      "name" : "Push Notification Service",
+      "properties" : {
+        "structurizr.dsl.identifier" : "pushNotificationService"
+      },
+      "tags" : "Element,Software System,External"
+    }, {
+      "containers" : [ {
+        "description" : "Provides the viewer and creator experience in the browser.",
+        "documentation" : { },
+        "id" : "8",
+        "name" : "Web Application",
+        "properties" : {
+          "structurizr.dsl.identifier" : "webApp",
+          "source" : "web/"
+        },
+        "relationships" : [ {
+          "description" : "Sends authenticated requests to",
+          "destinationId" : "10",
+          "id" : "40",
+          "sourceId" : "8",
+          "tags" : "Relationship",
+          "technology" : "HTTPS/JSON"
+        }, {
+          "description" : "Sends authenticated requests to",
+          "destinationId" : "9",
+          "id" : "41",
+          "linkedRelationshipId" : "40",
+          "sourceId" : "8",
+          "technology" : "HTTPS/JSON"
+        } ],
+        "tags" : "Element,Container",
+        "technology" : "React SPA"
+      }, {
+        "components" : [ {
+          "description" : "Validates JWT tokens and enforces access control.",
+          "documentation" : { },
+          "id" : "10",
+          "name" : "Auth Middleware",
+          "properties" : {
+            "structurizr.dsl.identifier" : "authMiddleware",
+            "source" : "services/api-gateway/src/middleware/auth.ts"
+          },
+          "relationships" : [ {
+            "description" : "Passes validated requests to",
+            "destinationId" : "11",
+            "id" : "42",
+            "sourceId" : "10",
+            "tags" : "Relationship"
+          } ],
+          "tags" : "Element,Component",
+          "technology" : "Express Middleware"
+        }, {
+          "description" : "Maps incoming requests to the appropriate backend service.",
+          "documentation" : { },
+          "id" : "11",
+          "name" : "Route Handler",
+          "properties" : {
+            "structurizr.dsl.identifier" : "routeHandler",
+            "source" : "services/api-gateway/src/routes/"
+          },
+          "relationships" : [ {
+            "description" : "Routes video requests to",
+            "destinationId" : "14",
+            "id" : "44",
+            "sourceId" : "11",
+            "tags" : "Relationship",
+            "technology" : "HTTPS/JSON"
+          }, {
+            "description" : "Routes video requests to",
+            "destinationId" : "13",
+            "id" : "45",
+            "linkedRelationshipId" : "44",
+            "sourceId" : "11",
+            "technology" : "HTTPS/JSON"
+          }, {
+            "description" : "Routes user requests to",
+            "destinationId" : "19",
+            "id" : "48",
+            "sourceId" : "11",
+            "tags" : "Relationship",
+            "technology" : "HTTPS/JSON"
+          }, {
+            "description" : "Routes user requests to",
+            "destinationId" : "18",
+            "id" : "49",
+            "linkedRelationshipId" : "48",
+            "sourceId" : "11",
+            "technology" : "HTTPS/JSON"
+          }, {
+            "description" : "Routes recommendation requests to",
+            "destinationId" : "24",
+            "id" : "52",
+            "sourceId" : "11",
+            "tags" : "Relationship",
+            "technology" : "HTTPS/JSON"
+          }, {
+            "description" : "Routes recommendation requests to",
+            "destinationId" : "23",
+            "id" : "53",
+            "linkedRelationshipId" : "52",
+            "sourceId" : "11",
+            "technology" : "HTTPS/JSON"
+          } ],
+          "tags" : "Element,Component",
+          "technology" : "Express Router"
+        }, {
+          "description" : "Throttles requests to protect backend services from overload.",
+          "documentation" : { },
+          "id" : "12",
+          "name" : "Rate Limiter",
+          "properties" : {
+            "structurizr.dsl.identifier" : "rateLimiter",
+            "source" : "services/api-gateway/src/middleware/rate-limiter.ts"
+          },
+          "relationships" : [ {
+            "description" : "Guards incoming requests before",
+            "destinationId" : "10",
+            "id" : "43",
+            "sourceId" : "12",
+            "tags" : "Relationship"
+          } ],
+          "tags" : "Element,Component",
+          "technology" : "express-rate-limit"
+        } ],
+        "description" : "Routes and authenticates all client requests to backend services.",
+        "documentation" : { },
+        "id" : "9",
+        "name" : "API Gateway",
+        "properties" : {
+          "structurizr.dsl.identifier" : "apiGateway",
+          "source" : "services/api-gateway/"
+        },
+        "relationships" : [ {
+          "description" : "Routes video requests to",
+          "destinationId" : "14",
+          "id" : "46",
+          "linkedRelationshipId" : "44",
+          "sourceId" : "9",
+          "technology" : "HTTPS/JSON"
+        }, {
+          "description" : "Routes video requests to",
+          "destinationId" : "13",
+          "id" : "47",
+          "linkedRelationshipId" : "44",
+          "sourceId" : "9",
+          "technology" : "HTTPS/JSON"
+        }, {
+          "description" : "Routes user requests to",
+          "destinationId" : "19",
+          "id" : "50",
+          "linkedRelationshipId" : "48",
+          "sourceId" : "9",
+          "technology" : "HTTPS/JSON"
+        }, {
+          "description" : "Routes user requests to",
+          "destinationId" : "18",
+          "id" : "51",
+          "linkedRelationshipId" : "48",
+          "sourceId" : "9",
+          "technology" : "HTTPS/JSON"
+        }, {
+          "description" : "Routes recommendation requests to",
+          "destinationId" : "24",
+          "id" : "54",
+          "linkedRelationshipId" : "52",
+          "sourceId" : "9",
+          "technology" : "HTTPS/JSON"
+        }, {
+          "description" : "Routes recommendation requests to",
+          "destinationId" : "23",
+          "id" : "55",
+          "linkedRelationshipId" : "52",
+          "sourceId" : "9",
+          "technology" : "HTTPS/JSON"
+        } ],
+        "tags" : "Element,Container",
+        "technology" : "Node.js / Express"
+      }, {
+        "components" : [ {
+          "description" : "Accepts video uploads and initiates processing workflows.",
+          "documentation" : { },
+          "id" : "14",
+          "name" : "Upload Controller",
+          "properties" : {
+            "structurizr.dsl.identifier" : "uploadController",
+            "source" : "services/video/src/main/java/com/streamvault/video/controller/UploadController.java::UploadController"
+          },
+          "relationships" : [ {
+            "description" : "Initiates transcoding via",
+            "destinationId" : "15",
+            "id" : "56",
+            "sourceId" : "14",
+            "tags" : "Relationship"
+          } ],
+          "tags" : "Element,Component",
+          "technology" : "Spring REST Controller"
+        }, {
+          "description" : "Manages the transcoding pipeline and tracks job progress.",
+          "documentation" : { },
+          "id" : "15",
+          "name" : "Transcoding Orchestrator",
+          "properties" : {
+            "structurizr.dsl.identifier" : "transcodingOrchestrator",
+            "source" : "services/video/src/main/java/com/streamvault/video/service/TranscodingOrchestrator.java::TranscodingOrchestrator"
+          },
+          "relationships" : [ {
+            "description" : "Updates job status in",
+            "destinationId" : "16",
+            "id" : "57",
+            "sourceId" : "15",
+            "tags" : "Relationship"
+          }, {
+            "description" : "Publishes transcoding events to",
+            "destinationId" : "27",
+            "id" : "58",
+            "sourceId" : "15",
+            "tags" : "Relationship",
+            "technology" : "AMQP"
+          }, {
+            "description" : "Sends transcoded assets to",
+            "destinationId" : "17",
+            "id" : "65",
+            "sourceId" : "15",
+            "tags" : "Relationship"
+          } ],
+          "tags" : "Element,Component",
+          "technology" : "Spring Service"
+        }, {
+          "description" : "Reads and writes video metadata to the database.",
+          "documentation" : { },
+          "id" : "16",
+          "name" : "Video Metadata Repository",
+          "properties" : {
+            "structurizr.dsl.identifier" : "videoMetadataRepository",
+            "source" : "services/video/src/main/java/com/streamvault/video/repository/VideoMetadataRepository.java"
+          },
+          "relationships" : [ {
+            "description" : "Reads and writes video records",
+            "destinationId" : "28",
+            "id" : "60",
+            "sourceId" : "16",
+            "tags" : "Relationship",
+            "technology" : "JDBC"
+          } ],
+          "tags" : "Element,Component",
+          "technology" : "Spring Data JPA"
+        }, {
+          "description" : "Publishes transcoded video assets to the CDN for distribution.",
+          "documentation" : { },
+          "id" : "17",
+          "name" : "CDN Client",
+          "properties" : {
+            "structurizr.dsl.identifier" : "cdnClient",
+            "source" : "services/video/src/main/java/com/streamvault/video/client/CdnClient.java"
+          },
+          "relationships" : [ {
+            "description" : "Pushes video assets to",
+            "destinationId" : "4",
+            "id" : "62",
+            "sourceId" : "17",
+            "tags" : "Relationship",
+            "technology" : "HTTPS"
+          } ],
+          "tags" : "Element,Component",
+          "technology" : "HTTP Client"
+        } ],
+        "description" : "Handles video upload, transcoding orchestration, and metadata management.",
+        "documentation" : { },
+        "id" : "13",
+        "name" : "Video Service",
+        "properties" : {
+          "structurizr.dsl.identifier" : "videoService",
+          "source" : "services/video/"
+        },
+        "relationships" : [ {
+          "description" : "Publishes transcoding events to",
+          "destinationId" : "27",
+          "id" : "59",
+          "linkedRelationshipId" : "58",
+          "sourceId" : "13",
+          "technology" : "AMQP"
+        }, {
+          "description" : "Reads and writes video records",
+          "destinationId" : "28",
+          "id" : "61",
+          "linkedRelationshipId" : "60",
+          "sourceId" : "13",
+          "technology" : "JDBC"
+        }, {
+          "description" : "Pushes video assets to",
+          "destinationId" : "4",
+          "id" : "63",
+          "linkedRelationshipId" : "62",
+          "sourceId" : "13",
+          "technology" : "HTTPS"
+        } ],
+        "tags" : "Element,Container",
+        "technology" : "Java / Spring Boot"
+      }, {
+        "components" : [ {
+          "description" : "Handles registration, login, and profile operations.",
+          "documentation" : { },
+          "id" : "19",
+          "name" : "Account Handler",
+          "properties" : {
+            "structurizr.dsl.identifier" : "accountHandler",
+            "source" : "services/user/handler/account.go"
+          },
+          "relationships" : [ {
+            "description" : "Delegates subscription operations to",
+            "destinationId" : "20",
+            "id" : "66",
+            "sourceId" : "19",
+            "tags" : "Relationship"
+          } ],
+          "tags" : "Element,Component",
+          "technology" : "HTTP Handler"
+        }, {
+          "description" : "Manages viewer subscriptions and billing lifecycle.",
+          "documentation" : { },
+          "id" : "20",
+          "name" : "Subscription Manager",
+          "properties" : {
+            "structurizr.dsl.identifier" : "subscriptionManager",
+            "source" : "services/user/service/subscription.go"
+          },
+          "relationships" : [ {
+            "description" : "Reads and writes channel data via",
+            "destinationId" : "21",
+            "id" : "67",
+            "sourceId" : "20",
+            "tags" : "Relationship"
+          }, {
+            "description" : "Initiates payment transactions via",
+            "destinationId" : "22",
+            "id" : "68",
+            "sourceId" : "20",
+            "tags" : "Relationship"
+          }, {
+            "description" : "Publishes subscription events to",
+            "destinationId" : "27",
+            "id" : "74",
+            "sourceId" : "20",
+            "tags" : "Relationship",
+            "technology" : "AMQP"
+          } ],
+          "tags" : "Element,Component",
+          "technology" : "Service"
+        }, {
+          "description" : "Persists creator channel data and follower relationships.",
+          "documentation" : { },
+          "id" : "21",
+          "name" : "Channel Repository",
+          "properties" : {
+            "structurizr.dsl.identifier" : "channelRepository",
+            "source" : "services/user/repository/channel.go"
+          },
+          "relationships" : [ {
+            "description" : "Persists channel and follower data",
+            "destinationId" : "29",
+            "id" : "69",
+            "sourceId" : "21",
+            "tags" : "Relationship",
+            "technology" : "TCP"
+          } ],
+          "tags" : "Element,Component",
+          "technology" : "pgx Repository"
+        }, {
+          "description" : "Integrates with the external payment gateway for transactions.",
+          "documentation" : { },
+          "id" : "22",
+          "name" : "Payment Client",
+          "properties" : {
+            "structurizr.dsl.identifier" : "paymentClient",
+            "source" : "services/user/client/payment.go"
+          },
+          "relationships" : [ {
+            "description" : "Processes payments through",
+            "destinationId" : "5",
+            "id" : "71",
+            "sourceId" : "22",
+            "tags" : "Relationship",
+            "technology" : "HTTPS/JSON"
+          } ],
+          "tags" : "Element,Component",
+          "technology" : "HTTP Client"
+        } ],
+        "description" : "Manages user accounts, profiles, subscriptions, and creator channels.",
+        "documentation" : { },
+        "id" : "18",
+        "name" : "User Service",
+        "properties" : {
+          "structurizr.dsl.identifier" : "userService",
+          "source" : "services/user/"
+        },
+        "relationships" : [ {
+          "description" : "Persists channel and follower data",
+          "destinationId" : "29",
+          "id" : "70",
+          "linkedRelationshipId" : "69",
+          "sourceId" : "18",
+          "technology" : "TCP"
+        }, {
+          "description" : "Processes payments through",
+          "destinationId" : "5",
+          "id" : "72",
+          "linkedRelationshipId" : "71",
+          "sourceId" : "18",
+          "technology" : "HTTPS/JSON"
+        }, {
+          "description" : "Publishes subscription events to",
+          "destinationId" : "27",
+          "id" : "75",
+          "linkedRelationshipId" : "74",
+          "sourceId" : "18",
+          "technology" : "AMQP"
+        } ],
+        "tags" : "Element,Container",
+        "technology" : "Go"
+      }, {
+        "components" : [ {
+          "description" : "Serves recommendation requests from the API gateway.",
+          "documentation" : { },
+          "id" : "24",
+          "name" : "Recommendation API",
+          "properties" : {
+            "structurizr.dsl.identifier" : "recommendationApi",
+            "source" : "services/recommendation/app/api/recommendations.py"
+          },
+          "relationships" : [ {
+            "description" : "Invokes recommendation models in",
+            "destinationId" : "25",
+            "id" : "76",
+            "sourceId" : "24",
+            "tags" : "Relationship"
+          } ],
+          "tags" : "Element,Component",
+          "technology" : "FastAPI Router"
+        }, {
+          "description" : "Runs collaborative filtering and content-based models.",
+          "documentation" : { },
+          "id" : "25",
+          "name" : "ML Pipeline",
+          "properties" : {
+            "structurizr.dsl.identifier" : "mlPipeline",
+            "source" : "services/recommendation/app/ml/"
+          },
+          "relationships" : [ {
+            "description" : "Reads aggregated viewing data from",
+            "destinationId" : "26",
+            "id" : "77",
+            "sourceId" : "25",
+            "tags" : "Relationship"
+          } ],
+          "tags" : "Element,Component",
+          "technology" : "scikit-learn / PyTorch"
+        }, {
+          "description" : "Queries aggregated viewing data for model input.",
+          "documentation" : { },
+          "id" : "26",
+          "name" : "Viewing History Repository",
+          "properties" : {
+            "structurizr.dsl.identifier" : "viewingHistoryRepository",
+            "source" : "services/recommendation/app/repository/viewing_history.py"
+          },
+          "relationships" : [ {
+            "description" : "Queries viewing history",
+            "destinationId" : "30",
+            "id" : "78",
+            "sourceId" : "26",
+            "tags" : "Relationship",
+            "technology" : "TCP"
+          } ],
+          "tags" : "Element,Component",
+          "technology" : "SQLAlchemy Repository"
+        } ],
+        "description" : "Generates personalised video recommendations based on viewing history.",
+        "documentation" : { },
+        "id" : "23",
+        "name" : "Recommendation Engine",
+        "properties" : {
+          "structurizr.dsl.identifier" : "recommendationEngine",
+          "source" : "services/recommendation/"
+        },
+        "relationships" : [ {
+          "description" : "Consumes viewing events from",
+          "destinationId" : "27",
+          "id" : "31",
+          "sourceId" : "23",
+          "tags" : "Relationship",
+          "technology" : "AMQP"
+        }, {
+          "description" : "Queries viewing history",
+          "destinationId" : "30",
+          "id" : "79",
+          "linkedRelationshipId" : "78",
+          "sourceId" : "23",
+          "technology" : "TCP"
+        } ],
+        "tags" : "Element,Container",
+        "technology" : "Python / FastAPI"
+      }, {
+        "description" : "Decouples services via asynchronous event-driven messaging.",
+        "documentation" : { },
+        "id" : "27",
+        "name" : "Event Bus",
+        "properties" : {
+          "structurizr.dsl.identifier" : "eventBus"
+        },
+        "relationships" : [ {
+          "description" : "Triggers notifications via",
+          "destinationId" : "6",
+          "id" : "32",
+          "sourceId" : "27",
+          "tags" : "Relationship",
+          "technology" : "HTTPS"
+        } ],
+        "tags" : "Element,Container,Queue",
+        "technology" : "RabbitMQ"
+      }, {
+        "description" : "Stores video metadata, categories, and transcoding job state.",
+        "documentation" : { },
+        "id" : "28",
+        "name" : "Video Database",
+        "properties" : {
+          "structurizr.dsl.identifier" : "videoDatabase"
+        },
+        "tags" : "Element,Container,Database",
+        "technology" : "PostgreSQL"
+      }, {
+        "description" : "Stores user accounts, profiles, subscriptions, and channel data.",
+        "documentation" : { },
+        "id" : "29",
+        "name" : "User Database",
+        "properties" : {
+          "structurizr.dsl.identifier" : "userDatabase"
+        },
+        "tags" : "Element,Container,Database",
+        "technology" : "PostgreSQL"
+      }, {
+        "description" : "Stores viewing history, engagement metrics, and recommendation model data.",
+        "documentation" : { },
+        "id" : "30",
+        "name" : "Analytics Database",
+        "properties" : {
+          "structurizr.dsl.identifier" : "analyticsDatabase"
+        },
+        "tags" : "Element,Container,Database",
+        "technology" : "ClickHouse"
+      } ],
+      "description" : "Enables viewers to stream video content and creators to publish and monetise their channels.",
+      "documentation" : { },
+      "id" : "7",
+      "name" : "StreamVault Platform",
+      "properties" : {
+        "structurizr.dsl.identifier" : "streamVault"
+      },
+      "relationships" : [ {
+        "description" : "Triggers notifications via",
+        "destinationId" : "6",
+        "id" : "33",
+        "linkedRelationshipId" : "32",
+        "sourceId" : "7",
+        "technology" : "HTTPS"
+      }, {
+        "description" : "Pushes video assets to",
+        "destinationId" : "4",
+        "id" : "64",
+        "linkedRelationshipId" : "62",
+        "sourceId" : "7",
+        "technology" : "HTTPS"
+      }, {
+        "description" : "Processes payments through",
+        "destinationId" : "5",
+        "id" : "73",
+        "linkedRelationshipId" : "71",
+        "sourceId" : "7",
+        "technology" : "HTTPS/JSON"
+      } ],
+      "tags" : "Element,Software System"
+    } ]
+  },
+  "name" : "StreamVault",
+  "properties" : {
+    "structurizr.inspection.error" : "19",
+    "structurizr.inspection.info" : "0",
+    "structurizr.inspection.ignore" : "0",
+    "structurizr.inspection.warning" : "0"
+  },
+  "views" : {
+    "componentViews" : [ {
+      "automaticLayout" : {
+        "applied" : false,
+        "edgeSeparation" : 0,
+        "implementation" : "Graphviz",
+        "nodeSeparation" : 300,
+        "rankDirection" : "TopBottom",
+        "rankSeparation" : 300,
+        "vertices" : false
+      },
+      "containerId" : "9",
+      "elements" : [ {
+        "id" : "8",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "10",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "11",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "12",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "13",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "18",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "23",
+        "x" : 0,
+        "y" : 0
+      } ],
+      "externalContainerBoundariesVisible" : false,
+      "key" : "ComponentsOfApiGateway",
+      "name" : "Component View: StreamVault Platform - API Gateway",
+      "order" : 3,
+      "relationships" : [ {
+        "id" : "40"
+      }, {
+        "id" : "42"
+      }, {
+        "id" : "43"
+      }, {
+        "id" : "45"
+      }, {
+        "id" : "49"
+      }, {
+        "id" : "53"
+      } ]
+    }, {
+      "automaticLayout" : {
+        "applied" : false,
+        "edgeSeparation" : 0,
+        "implementation" : "Graphviz",
+        "nodeSeparation" : 300,
+        "rankDirection" : "TopBottom",
+        "rankSeparation" : 300,
+        "vertices" : false
+      },
+      "containerId" : "13",
+      "elements" : [ {
+        "id" : "4",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "9",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "14",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "15",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "16",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "17",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "27",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "28",
+        "x" : 0,
+        "y" : 0
+      } ],
+      "externalContainerBoundariesVisible" : false,
+      "key" : "ComponentsOfVideoService",
+      "name" : "Component View: StreamVault Platform - Video Service",
+      "order" : 4,
+      "relationships" : [ {
+        "id" : "46"
+      }, {
+        "id" : "56"
+      }, {
+        "id" : "57"
+      }, {
+        "id" : "58"
+      }, {
+        "id" : "60"
+      }, {
+        "id" : "62"
+      }, {
+        "id" : "65"
+      } ]
+    }, {
+      "automaticLayout" : {
+        "applied" : false,
+        "edgeSeparation" : 0,
+        "implementation" : "Graphviz",
+        "nodeSeparation" : 300,
+        "rankDirection" : "TopBottom",
+        "rankSeparation" : 300,
+        "vertices" : false
+      },
+      "containerId" : "18",
+      "elements" : [ {
+        "id" : "5",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "9",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "19",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "20",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "21",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "22",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "27",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "29",
+        "x" : 0,
+        "y" : 0
+      } ],
+      "externalContainerBoundariesVisible" : false,
+      "key" : "ComponentsOfUserService",
+      "name" : "Component View: StreamVault Platform - User Service",
+      "order" : 5,
+      "relationships" : [ {
+        "id" : "50"
+      }, {
+        "id" : "66"
+      }, {
+        "id" : "67"
+      }, {
+        "id" : "68"
+      }, {
+        "id" : "69"
+      }, {
+        "id" : "71"
+      }, {
+        "id" : "74"
+      } ]
+    }, {
+      "automaticLayout" : {
+        "applied" : false,
+        "edgeSeparation" : 0,
+        "implementation" : "Graphviz",
+        "nodeSeparation" : 300,
+        "rankDirection" : "TopBottom",
+        "rankSeparation" : 300,
+        "vertices" : false
+      },
+      "containerId" : "23",
+      "elements" : [ {
+        "id" : "9",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "24",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "25",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "26",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "30",
+        "x" : 0,
+        "y" : 0
+      } ],
+      "externalContainerBoundariesVisible" : false,
+      "key" : "ComponentsOfRecommendationEngine",
+      "name" : "Component View: StreamVault Platform - Recommendation Engine",
+      "order" : 6,
+      "relationships" : [ {
+        "id" : "54"
+      }, {
+        "id" : "76"
+      }, {
+        "id" : "77"
+      }, {
+        "id" : "78"
+      } ]
+    } ],
+    "configuration" : {
+      "branding" : { },
+      "styles" : { },
+      "terminology" : { }
+    },
+    "containerViews" : [ {
+      "automaticLayout" : {
+        "applied" : false,
+        "edgeSeparation" : 0,
+        "implementation" : "Graphviz",
+        "nodeSeparation" : 300,
+        "rankDirection" : "TopBottom",
+        "rankSeparation" : 300,
+        "vertices" : false
+      },
+      "elements" : [ {
+        "id" : "1",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "2",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "3",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "4",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "5",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "6",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "8",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "9",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "13",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "18",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "23",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "27",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "28",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "29",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "30",
+        "x" : 0,
+        "y" : 0
+      } ],
+      "externalSoftwareSystemBoundariesVisible" : false,
+      "key" : "Containers",
+      "name" : "Container View: StreamVault Platform",
+      "order" : 2,
+      "relationships" : [ {
+        "id" : "31"
+      }, {
+        "id" : "32"
+      }, {
+        "id" : "34"
+      }, {
+        "id" : "36"
+      }, {
+        "id" : "38"
+      }, {
+        "id" : "41"
+      }, {
+        "id" : "47"
+      }, {
+        "id" : "51"
+      }, {
+        "id" : "55"
+      }, {
+        "id" : "59"
+      }, {
+        "id" : "61"
+      }, {
+        "id" : "63"
+      }, {
+        "id" : "70"
+      }, {
+        "id" : "72"
+      }, {
+        "id" : "75"
+      }, {
+        "id" : "79"
+      } ],
+      "softwareSystemId" : "7"
+    } ],
+    "deploymentViews" : [ {
+      "automaticLayout" : {
+        "applied" : false,
+        "edgeSeparation" : 0,
+        "implementation" : "Graphviz",
+        "nodeSeparation" : 300,
+        "rankDirection" : "TopBottom",
+        "rankSeparation" : 300,
+        "vertices" : false
+      },
+      "elements" : [ {
+        "id" : "80",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "81",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "82",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "83",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "84",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "86",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "87",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "89",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "91",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "93",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "94",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "98",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "99",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "101",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "103",
+        "x" : 0,
+        "y" : 0
+      } ],
+      "environment" : "Live",
+      "key" : "LiveDeployment",
+      "name" : "Deployment View: StreamVault Platform - Live",
+      "order" : 7,
+      "relationships" : [ {
+        "id" : "100"
+      }, {
+        "id" : "102"
+      }, {
+        "id" : "104"
+      }, {
+        "id" : "85"
+      }, {
+        "id" : "88"
+      }, {
+        "id" : "90"
+      }, {
+        "id" : "92"
+      }, {
+        "id" : "95"
+      }, {
+        "id" : "96"
+      }, {
+        "id" : "97"
+      } ],
+      "softwareSystemId" : "7"
+    } ],
+    "systemContextViews" : [ {
+      "automaticLayout" : {
+        "applied" : false,
+        "edgeSeparation" : 0,
+        "implementation" : "Graphviz",
+        "nodeSeparation" : 300,
+        "rankDirection" : "TopBottom",
+        "rankSeparation" : 300,
+        "vertices" : false
+      },
+      "elements" : [ {
+        "id" : "1",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "2",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "3",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "4",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "5",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "6",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "7",
+        "x" : 0,
+        "y" : 0
+      } ],
+      "enterpriseBoundaryVisible" : true,
+      "key" : "SystemContext",
+      "name" : "System Context View: StreamVault Platform",
+      "order" : 1,
+      "relationships" : [ {
+        "id" : "33"
+      }, {
+        "id" : "35"
+      }, {
+        "id" : "37"
+      }, {
+        "id" : "39"
+      }, {
+        "id" : "64"
+      }, {
+        "id" : "73"
+      } ],
+      "softwareSystemId" : "7"
+    } ]
+  }
+}

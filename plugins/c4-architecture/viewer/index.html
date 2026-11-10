@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>C4 viewer</title>
+<link rel="icon" href="data:,">
+<script src="vendor/cytoscape.min.js"></script>
+<script src="vendor/elk.bundled.js"></script>
+<script src="vendor/cytoscape-elk.js"></script>
+<script src="viewer-core.js"></script>
+<script src="model.js"></script>
+<style>
+  html, body { margin: 0; height: 100%; font: 13px/1.4 -apple-system, "Helvetica Neue", Arial, sans-serif; color: #333; }
+  #bar { position: fixed; top: 0; left: 0; right: 0; height: 40px; display: flex; gap: 8px; align-items: center;
+         padding: 0 12px; background: #f5f5f5; border-bottom: 1px solid #ddd; z-index: 2; }
+  #bar h1 { font-size: 14px; margin: 0 12px 0 0; }
+  #cy { position: fixed; top: 41px; left: 0; right: 340px; bottom: 0; }
+  #side { position: fixed; top: 41px; right: 0; width: 340px; bottom: 0; overflow: auto; border-left: 1px solid #ddd;
+          background: #fff; padding: 10px 12px; box-sizing: border-box; }
+  #identity { border: 2px solid #2e7d32; border-radius: 4px; padding: 8px; margin-bottom: 12px; background: #f1f8f1; }
+  #identity.fail { border-color: #c62828; background: #fdecea; }
+  #identity .eq { font-weight: 600; }
+  #identity .verdict { color: #2e7d32; font-weight: 700; }
+  #identity.fail .verdict { color: #c62828; }
+  #details h2 { font-size: 15px; margin: 4px 0; }
+  #details .tech { color: #666; font-style: italic; }
+  #details code { font-size: 12px; background: #f3f3f3; padding: 1px 3px; }
+  #details li { margin-bottom: 6px; }
+  .muted { color: #888; }
+</style>
+</head>
+<body>
+<div id="bar">
+  <h1 id="title">C4 viewer</h1>
+  <select id="viewSel"></select>
+  <button id="expandAll">Expand all</button>
+  <button id="collapseAll">Collapse all</button>
+  <span class="muted">Click a box to expand or collapse it. Hover or click anything for details.</span>
+</div>
+<div id="cy"></div>
+<div id="side">
+  <div id="identity"></div>
+  <div id="details"><p class="muted">Hover or click a box or an edge.</p></div>
+</div>
+<script>
+"use strict";
+// model.js (written by build-viewer.py) defines C4_VIEWER_MODEL; this page is the same for every model.
+const MODEL = window.C4_VIEWER_MODEL;
+const core = window.C4ViewerCore;
+const PAD = 18;
+let ds, view, vm, expanded = new Set(), notDrawn = [];
+let rendered = Promise.resolve();
+
+const cy = cytoscape({
+  container: document.getElementById("cy"),
+  maxZoom: 1.6,
+  style: [
+    { selector: "node", style: {
+      "shape": "round-rectangle", "background-color": "#fff", "border-width": 1.5, "border-color": "#999",
+      "label": "data(label)", "font-size": 11, "text-wrap": "wrap", "text-max-width": 230,
+      "text-valign": "center", "text-halign": "center", "width": "data(w)", "height": "data(h)", "color": "#333" } },
+    { selector: "node[fill]", style: { "background-color": "data(fill)", "color": "data(textColor)", "border-color": "data(fill)" } },
+    { selector: "node[stroke]", style: { "border-color": "data(stroke)", "color": "data(stroke)" } },
+    { selector: "node[fill][stroke]", style: { "color": "data(textColor)" } },
+    { selector: "node[strokeWidth]", style: { "border-width": "data(strokeWidth)" } },
+    { selector: "node[tcolor]", style: { "color": "data(tcolor)" } },
+    { selector: "node[shape]", style: { "shape": "data(shape)" } },
+    { selector: "node[icon]", style: { "background-image": "data(icon)", "background-fit": "none", "background-width": 22,
+      "background-height": 22, "background-position-y": 5, "text-margin-y": 10, "background-clip": "none" } },
+    { selector: "node.collapsedBox", style: { "border-style": "double", "border-width": 4, "background-color": "#f6f6f6" } },
+    { selector: "node.collapsedBox[fill]", style: { "background-color": "data(fill)" } },
+    { selector: ":parent", style: { "shape": "round-rectangle", "text-valign": "top", "text-halign": "center",
+      "background-color": "#fbfbfb", "background-opacity": 1, "padding": PAD, "text-margin-y": 2, "background-image": "none" } },
+    { selector: ":parent[fill]", style: { "background-color": "#fff", "color": "data(fill)", "border-style": "dashed" } },
+    { selector: "node.synthetic", style: { "border-style": "dashed" } },
+    { selector: "edge", style: {
+      "curve-style": "bezier", "target-arrow-shape": "triangle", "line-style": "dashed", "width": 1.2,
+      "line-color": "#777", "target-arrow-color": "#777", "label": "data(label)", "font-size": 9, "text-wrap": "wrap",
+      "text-max-width": 150, "text-background-color": "#fff", "text-background-opacity": 0.85, "color": "#444" } },
+    { selector: "edge.merged", style: { "width": 3, "line-color": "#455a64", "target-arrow-color": "#455a64",
+      "font-weight": "bold", "font-size": 10, "color": "#263238" } },
+  ],
+});
+
+function render() {
+  const built = core.build(ds, view, vm, expanded);
+  notDrawn = built.notDrawn;
+  cy.elements().remove();
+  cy.add(built.nodes);
+  cy.add(built.edges);
+  showIdentity();
+  // Cytoscape sizes an open box from its children plus "padding", with the label above them; ELK
+  // must reserve the same room inside each box, or open boxes overlap their neighbors.
+  const layout = cy.layout({ name: "elk", nodeDimensionsIncludeLabels: false, fit: true, padding: 30, animate: false,
+    nodeLayoutOptions: n => n.isParent()
+      ? { "elk.padding": `[top=${PAD + 14 * n.data("label").split("\n").length + 6},left=${PAD},bottom=${PAD},right=${PAD}]` }
+      : {},
+    elk: { "algorithm": "layered", "elk.direction": "DOWN", "elk.hierarchyHandling": "INCLUDE_CHILDREN",
+           "elk.spacing.nodeNode": 30, "elk.layered.spacing.nodeNodeBetweenLayers": 50,
+           "elk.layered.spacing.edgeNodeBetweenLayers": 20 } });
+  rendered = new Promise(res => layout.one("layoutstop", res));
+  layout.run();
+  return rendered;
+}
+
+function esc(s) { return String(s).replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c])); }
+
+function showIdentity() {
+  const x = core.identity(cy, view, vm);
+  const ok = x.relationshipsOk && x.elementsOk && !notDrawn.length;
+  const el = document.getElementById("identity");
+  const s = n => n === 1 ? "" : "s";
+  el.className = ok ? "" : "fail";
+  el.innerHTML =
+    `<div><b>${esc(view.key)}</b> <span class="muted">(${view.kind})</span></div>` +
+    `<div class="eq">relationships in view (export) = ${x.expectedRelationships}</div>` +
+    `<div>drawn individually = ${x.individual}</div>` +
+    `<div>inside merged edges = ${x.merged} <span class="muted">(${x.mergedEdgeRels} on ${x.mergedEdges} edge${s(x.mergedEdges)} between boxes + ${x.badgeRels} on ${x.badges} box badge${s(x.badges)})</span></div>` +
+    `<div class="eq">${x.individual} + ${x.merged} = ${x.individual + x.merged} ${x.relationshipsOk ? "=" : "≠"} ${x.expectedRelationships}</div>` +
+    (notDrawn.length ? `<div>not drawn: ${notDrawn.length} (relationship ${notDrawn.map(esc).join(", ")})</div>` : "") +
+    `<div class="eq" style="margin-top:6px">elements in view (export) = ${x.expectedElements}</div>` +
+    `<div>boxes drawn = ${x.boxes}, inside collapsed boxes = ${x.inside}</div>` +
+    `<div class="eq">${x.boxes} + ${x.inside} = ${x.boxes + x.inside} ${x.elementsOk ? "=" : "≠"} ${x.expectedElements}</div>` +
+    (vm.missingElements.length ? `<div>missing from the model: ${vm.missingElements.map(esc).join(", ")}</div>` : "") +
+    `<div class="verdict">${ok ? "Identity holds" : "IDENTITY FAILS"}</div>`;
+}
+
+function relList(rels) {
+  const E = ds.elements;
+  return `<ol>` + rels.map(rid => {
+    const r = ds.relationships[rid];
+    return `<li><b>${esc(E[r.sourceId].name)}</b> → <b>${esc(E[r.destinationId].name)}</b><br>${esc(r.description)}` +
+           (r.technology ? ` <span class="tech">[${esc(r.technology)}]</span>` : "") + `</li>`;
+  }).join("") + `</ol>`;
+}
+
+function showNode(id) {
+  const e = ds.elements[id];
+  const inner = cy.$id(id).data("innerRels") || [];
+  document.getElementById("details").innerHTML =
+    `<h2>${esc(e.name)}</h2><div class="muted">${e.kind}${vm.synthetic.has(id) ? " (view boundary)" : ""}</div>` +
+    (e.technology ? `<div class="tech">[${esc(e.technology)}]</div>` : "") +
+    (e.description ? `<p>${esc(e.description)}</p>` : "") +
+    `<div><b>Tags:</b> ${e.tags.map(esc).join(", ") || "<span class=muted>none</span>"}</div>` +
+    `<div><b>Source:</b> ${e.source ? "<code>" + esc(e.source) + "</code>" : "<span class=muted>none</span>"}</div>` +
+    ((vm.children[id] || []).length
+      ? `<div class="muted" style="margin-top:6px">${vm.descendants(id)} element(s) inside; click to ${expanded.has(id) ? "collapse" : "expand"}.</div>` : "") +
+    (inner.length ? `<h3 style="margin:10px 0 2px">Relationships inside</h3>` + relList(inner) : "");
+}
+
+function showEdge(edge) {
+  const E = ds.elements, rels = edge.data("rels");
+  document.getElementById("details").innerHTML =
+    `<h2>${rels.length} relationship${rels.length === 1 ? "" : "s"}</h2>` +
+    `<div class="muted">${esc(E[edge.data("source")].name)} → ${esc(E[edge.data("target")].name)}</div>` + relList(rels);
+}
+
+cy.on("mouseover", "node", ev => showNode(ev.target.id()));
+cy.on("mouseover tap", "edge", ev => showEdge(ev.target));
+cy.on("tap", "node", ev => {
+  const id = ev.target.id();
+  if ((vm.children[id] || []).length) {
+    if (expanded.has(id)) expanded.delete(id); else expanded.add(id);
+    render();
+  }
+  showNode(id);
+});
+
+const sel = document.getElementById("viewSel");
+function setView(dsIndex, key) {
+  ds = MODEL.datasets[dsIndex];
+  view = ds.views.find(v => v.key === key);
+  sel.value = dsIndex + "/" + key;
+  history.replaceState(null, "", "#" + encodeURIComponent(ds.label) + "/" + encodeURIComponent(key));
+  vm = core.viewModel(ds, view);
+  expanded = core.glance(vm);
+  document.getElementById("details").innerHTML = `<p class="muted">Hover or click a box or an edge.</p>`;
+  return render();
+}
+function expandAll() { expanded = core.allExpanded(vm); return render(); }
+function collapseAll() { expanded = core.glance(vm); return render(); }
+
+if (MODEL.title) document.title = document.getElementById("title").textContent = MODEL.title;
+MODEL.datasets.forEach((d, i) => {
+  const g = document.createElement("optgroup");
+  g.label = d.label;
+  for (const v of d.views) {
+    const o = document.createElement("option");
+    o.value = i + "/" + v.key;
+    o.textContent = v.key + (v.title && v.title !== v.key ? " — " + v.title : "");
+    g.appendChild(o);
+  }
+  sel.appendChild(g);
+});
+sel.onchange = () => { const at = sel.value.indexOf("/"); setView(+sel.value.slice(0, at), sel.value.slice(at + 1)); };
+document.getElementById("expandAll").onclick = expandAll;
+document.getElementById("collapseAll").onclick = collapseAll;
+
+window.viewer = { MODEL, cy, setView, expandAll, collapseAll, render, get rendered() { return rendered; },
+                  identity: () => core.identity(cy, view, vm) };
+
+// A link may name a view as #<label>/<view key>.
+const [hashLabel, hashKey] = location.hash.slice(1).split("/").map(decodeURIComponent);
+const start = MODEL.datasets.findIndex(d => d.label === hashLabel && d.views.some(v => v.key === hashKey));
+if (start >= 0) setView(start, hashKey); else setView(0, MODEL.datasets[0].views[0].key);
+</script>
+</body>
+</html>

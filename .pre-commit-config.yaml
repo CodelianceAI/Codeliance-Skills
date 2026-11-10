@@ -11,6 +11,18 @@ repos:
             scripts/check-(sources\.sh|ast\.py)
             |tests/
           )
+      - id: viewer-tests
+        name: viewer test suite
+        entry: bash plugins/c4-architecture/tests/test-viewer.sh
+        language: system
+        pass_filenames: false
+        files: >-
+          (?x)^plugins/c4-architecture/(
+            scripts/(build-viewer\.py|check-viewer\.js)
+            |viewer/
+            |tests/(test-viewer\.sh|fixtures/viewer/)
+            |skills/c4-architecture/examples/example-workspace\.dsl
+          )
       - id: continue-session-tests
         name: continue-session validate and test suite
         entry: bash -c 'claude plugin validate plugins/continue-session && claude plugin test plugins/continue-session'

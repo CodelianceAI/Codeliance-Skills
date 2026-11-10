@@ -35,3 +35,20 @@
   # check-sources.sh takes exactly one workspace, so keep the override anchored
   # to a single path.
   files: ^architecture/workspace\.dsl$
+
+# Requires `node` on PATH. `language: script` rather than `language: node`: the check needs no npm
+# packages (it runs the viewer's own vendored Cytoscape), and `language: node` would install this
+# repository as an npm package and provision a Node of its own.
+- id: check-c4-viewer
+  name: check the C4 viewer's closing identity
+  description: >-
+    Check a viewer built by build-viewer.py: in every view, collapsed and fully expanded, every
+    relationship and element of the export is drawn or counted, and a self-test proves the check
+    fails when one is dropped.
+  entry: plugins/c4-architecture/scripts/check-viewer.js
+  language: script
+  # The viewer directory is an argument, not the matched filenames: a consumer whose viewer lives
+  # elsewhere overrides both `files:` and `args:`.
+  files: ^architecture/viewer/
+  pass_filenames: false
+  args: [architecture/viewer]

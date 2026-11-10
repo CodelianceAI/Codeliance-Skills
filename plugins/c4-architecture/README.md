@@ -98,6 +98,37 @@ What are the logical building blocks inside each container?
 | Optional — Deployment | `deployment` | Infrastructure and deployment environments |
 | Optional — Dynamic | `dynamic` | Key behavioural flows showing runtime interactions |
 
+## Interactive Viewer
+
+A static page for browsing a large model: pick a view, then click a box to expand or collapse what is inside it. Hover or click a box or an edge for its description, technology, tags and `source`.
+
+![Viewer](skills/c4-architecture/examples/viewer.png)
+
+Collapsing never hides a relationship. Relationships between two collapsed boxes are merged into one edge labeled with their count, and those with both ends inside one collapsed box are listed on that box ("⟲ N relationships inside"). The side panel shows the **closing identity** for the current view, counted from what is drawn against the export's own counts:
+
+- relationships drawn individually + relationships inside merged edges and box badges = relationships in the view
+- boxes drawn + elements inside collapsed boxes = elements in the view
+
+Any relationship or element that is not drawn turns the panel red.
+
+**Build** (needs `structurizr-cli` and [`uv`](https://docs.astral.sh/uv/)):
+
+```bash
+structurizr-cli export -workspace architecture/workspace.dsl -format json -output /tmp/c4
+scripts/build-viewer.py --out architecture/viewer --title "My system" model=/tmp/c4/workspace.json
+```
+
+Each `LABEL=EXPORT.json` is one group in the view selector; pass several to show, say, a proposal beside the live model. `--views LABEL=REGEX` keeps only the views of that export whose key matches. The output directory holds `index.html`, `viewer-core.js` and `vendor/` (Cytoscape.js, ELK and cytoscape-elk, with their licenses), copied verbatim, and `model.js`, the only file a model change rewrites. Open `index.html` from disk; it needs no server or network. The build fails on an export with no elements or a label left with no views.
+
+**Check** (needs `node`): `scripts/check-viewer.js architecture/viewer` runs the viewer's own collapse code in headless Cytoscape over every view, collapsed as the page opens it and fully expanded, and requires the identity to hold. It then drops one relationship and one element from each view's data and requires the identity to fail; a mutation that survives fails the check. It also fails when the directory was built by a different plugin version. As a pre-commit hook:
+
+```yaml
+- repo: https://github.com/CodelianceAI/Codeliance-Skills
+  rev: c4-architecture--v0.5.0
+  hooks:
+    - id: check-c4-viewer   # defaults: files ^architecture/viewer/, args [architecture/viewer]
+```
+
 ## Pre-Commit Validation
 
 Components in the DSL carry `source` properties that point to the code they represent. The bundled `check-sources.sh` script verifies these paths exist, catching stale references when files are renamed, moved, or deleted.
@@ -136,9 +167,15 @@ c4-architecture/
 ├── commands/
 │   └── c4.md
 ├── scripts/
+│   ├── build-viewer.py
 │   ├── check-ast.py
 │   ├── check-sources.sh
+│   ├── check-viewer.js
 │   └── render.sh
+├── viewer/                             # Copied into every built viewer
+│   ├── index.html
+│   ├── viewer-core.js                  # Collapse and identity, shared with check-viewer.js
+│   └── vendor/                         # Cytoscape.js, ELK, cytoscape-elk and their licenses
 ├── skills/
 │   └── c4-architecture/
 │       ├── SKILL.md
@@ -147,20 +184,23 @@ c4-architecture/
 │       │   └── structurizr-dsl-advanced.md
 │       └── examples/
 │           ├── example-workspace.dsl
+│           ├── viewer.png              # Viewer screenshot
 │           └── .diagrams/              # Rendered example SVGs
 ├── tests/
 │   ├── test-check-sources.sh           # Test suite for source validation
-│   └── fixtures/                       # DSL and source fixtures
+│   ├── test-viewer.sh                  # Test suite for the viewer build and check
+│   └── fixtures/                       # DSL, source and export fixtures
 └── README.md
 ```
 
-Run the test suite manually from the plugin root:
+Run the test suites manually from the plugin root:
 
 ```bash
 bash tests/test-check-sources.sh
+bash tests/test-viewer.sh
 ```
 
-The test suite also runs automatically via a [pre-commit](https://pre-commit.com/) hook whenever the validation scripts or test fixtures change. To set it up:
+The test suites also run automatically via a [pre-commit](https://pre-commit.com/) hook whenever the validation scripts or test fixtures change. To set it up:
 
 ```bash
 pip install pre-commit
