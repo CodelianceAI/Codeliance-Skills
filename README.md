@@ -41,3 +41,7 @@ Requires Claude Code v2.1.287 or later. Mods run inside Claude Code with your pe
 **Tool:** `mcp__continue-session__continueInNewSession` · **Slash command:** `/continue-resend`
 
 See [plugins/continue-session/README.md](plugins/continue-session/README.md) for full documentation.
+
+## License
+
+[MIT](LICENSE), except the third-party code vendored under `plugins/c4-architecture/viewer/vendor/`, which keeps its own licenses (in the files beside it).
